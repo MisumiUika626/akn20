@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { gzipSync } from "node:zlib";
 
 const siteOrigin = "https://misumiuika626.github.io";
 const basePath = "/akn20";
@@ -141,17 +142,17 @@ test("Home pages load only their locale-specific Maple stylesheet", async () => 
 	assert.notEqual(englishFonts[0].href, chineseFonts[0].href);
 });
 
-test("Only English pages preload the Newsreader LCP font", async () => {
+test("All pages preload the shared Inter LCP font", async () => {
 	const englishHome = linkAttributes(await readPage("/"));
 	const chineseHome = linkAttributes(await readPage("/zh/"));
-	const newsreaderPreloads = (links) =>
+	const interPreloads = (links) =>
 		links.filter(
 			({ as, href, rel }) =>
-				rel === "preload" && as === "font" && href?.includes("newsreader-latin-wght-normal"),
+				rel === "preload" && as === "font" && href?.includes("inter-latin-wght-normal"),
 		);
 
-	assert.equal(newsreaderPreloads(englishHome).length, 1);
-	assert.equal(newsreaderPreloads(chineseHome).length, 0);
+	assert.equal(interPreloads(englishHome).length, 1);
+	assert.equal(interPreloads(chineseHome).length, 1);
 });
 
 test("The shared and English font stylesheets stay within their performance budgets", async () => {
@@ -174,12 +175,17 @@ test("The shared and English font stylesheets stay within their performance budg
 
 	assert.ok(Buffer.byteLength(sharedStyles) < 100 * 1024);
 	assert.ok(Buffer.byteLength(englishFontCss) < 8 * 1024);
-	assert.ok(Buffer.byteLength(chineseFontCss) < 750 * 1024);
+	// CJK font CSS contains many repetitive unicode-range declarations. Keep a
+	// generous raw-size guard, but budget the gzip transfer size users receive.
+	assert.ok(Buffer.byteLength(chineseFontCss) < 800 * 1024);
+	assert.ok(gzipSync(chineseFontCss).byteLength < 400 * 1024);
 	assert.match(englishFontCss, /font-family:Maple Mono[;}]/u);
 	assert.doesNotMatch(englishFontCss, /Maple Mono CN/u);
 	assert.deepEqual(weights(englishFontCss), ["font-weight:400", "font-weight:500"]);
 	assert.match(chineseFontCss, /font-family:Maple Mono CN[;}]/u);
+	assert.match(chineseFontCss, /font-family:["']?Noto Sans SC Variable/u);
 	assert.deepEqual(weights(chineseFontCss), [
+		"font-weight:100",
 		"font-weight:300",
 		"font-weight:400",
 		"font-weight:500",

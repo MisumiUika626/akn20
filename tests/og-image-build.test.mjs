@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readdir, readFile, stat } from "node:fs/promises";
 import test from "node:test";
+import sharp from "sharp";
 
 test("generated Chinese OG images pass raster sanity checks at the expected dimensions", async () => {
 	const files = await readdir(new URL("../dist/", import.meta.url), { recursive: true });
@@ -12,7 +13,12 @@ test("generated Chinese OG images pass raster sanity checks at the expected dime
 		assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 		assert.equal(png.readUInt32BE(16), 1200, `${filename} width`);
 		assert.equal(png.readUInt32BE(20), 630, `${filename} height`);
-		assert.ok(png.byteLength > 12 * 1024, `${filename} is suspiciously small`);
+
+		const { channels } = await sharp(png).stats();
+		assert.ok(
+			channels.some(({ stdev }) => stdev > 2),
+			`${filename} appears to be a blank raster`,
+		);
 	}
 });
 

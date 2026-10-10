@@ -6,8 +6,8 @@ import {absoluteUrl, withBase} from "@/utils/path";
 import "../styles/global.css";
 import englishFontStylesheet from "../styles/fonts/en.css?url&no-inline";
 import chineseFontStylesheet from "../styles/fonts/zh.css?url&no-inline";
-// Preloaded body-font subset URL; everything else loads via @font-face.
-import newsreaderLatin from "@fontsource-variable/newsreader/files/newsreader-latin-wght-normal.woff2?url";
+// Preload the shared Latin UI font; the larger CJK font loads via @font-face as needed.
+import interLatin from "@fontsource-variable/inter/files/inter-latin-wght-normal.woff2?url";
 
 type Props = SiteMeta & { locale: Locale };
 
@@ -71,7 +71,7 @@ const goatcounter = analytics?.goatcounterUrl;
 {(isNotFound || /\/admin\/?$/.test(Astro.url.pathname)) && <meta name="robots" content="noindex" />}
 <meta content={siteConfig.author} name="author"/>
 
-{locale === "en" && <link rel="preload" as="font" type="font/woff2" href={newsreaderLatin} crossorigin />}
+	<link rel="preload" as="font" type="font/woff2" href={interLatin} crossorigin />
 
 {/* Default theme-color; ThemeProvider rewrites it to the active theme's bg. */}
 <meta content="#f5f4ed" name="theme-color"/>

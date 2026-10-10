@@ -39,6 +39,20 @@ test("Maple webfonts are isolated from the shared stylesheet", async () => {
 	assert.doesNotMatch(globalStyles, /@fontsource\/maple-mono/);
 });
 
+test("Shared typography self-hosts the modern sans font stack", async () => {
+	const [globalStyles, english, chinese] = await Promise.all([
+		readProjectFile("src/styles/global.css"),
+		readProjectFile("src/styles/typography/en.css"),
+		readProjectFile("src/styles/typography/zh.css"),
+	]);
+
+	assert.doesNotMatch(globalStyles, /@fontsource-variable\/noto-sans-sc/);
+	assert.doesNotMatch(globalStyles, /newsreader/);
+	assert.match(english, /--type-header-wordmark-size:\s*20px/);
+	assert.match(chinese, /Noto Sans SC Variable/);
+	assert.match(chinese, /--type-header-wordmark-size:\s*20px/);
+});
+
 test("Article-only KaTeX styles stay out of the shared stylesheet", async () => {
 	const [globalStyles, blogPost] = await Promise.all([
 		readProjectFile("src/styles/global.css"),
