@@ -43,7 +43,7 @@ const languageIcon =
 ---
 
 <header class="site-header" id="main-header">
-		<a href={withBase(localizedPath(locale, "/"))} class="wordmark">{wordmark}</a>
+		<a href={withBase(localizedPath(locale, "/"))} class="wordmark" id="site-wordmark" data-locale={locale}>{wordmark}</a>
 	<div class="header-right">
 			<nav class="nav" id="primary-nav" data-auth-origin={authOrigin} data-edit-path={withBase(localizedPath(locale, "/admin/"))} data-edit-label={t.nav["/admin/"]} aria-label={locale === "zh" ? "主导航" : "Primary"}>
 			{
@@ -85,6 +85,7 @@ const languageIcon =
 			<ThemeToggle locale={locale} />
 	</div>
 </header>
+<p id="wordmark-login-status" class="login-feedback" role="status" aria-live="polite" hidden></p>
 
 <script>
 	const nav = document.getElementById("primary-nav");
@@ -111,6 +112,51 @@ const languageIcon =
 	}
 	document.addEventListener("akn20-session-change", () => { void updateOwnerLink(); });
 	void updateOwnerLink();
+
+	const wordmark = document.getElementById("site-wordmark") as HTMLAnchorElement | null;
+	const feedback = document.getElementById("wordmark-login-status");
+	const zh = wordmark?.dataset.locale === "zh";
+	let clicks = 0;
+	let navigationTimer: ReturnType<typeof setTimeout> | undefined;
+	let loginPopup: Window | null = null;
+	const say = (text: string) => {
+		if (feedback) { feedback.hidden = false; feedback.textContent = text; }
+	};
+	wordmark?.addEventListener("click", (event) => {
+		if (!origin || !nav || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+		// Keyboard activation keeps the link's normal behavior. Pointer clicks wait
+		// briefly so the first click cannot navigate away before a triple click.
+		if (event.detail === 0 && !(event as PointerEvent).pointerType) return;
+		event.preventDefault();
+		if (navigationTimer) clearTimeout(navigationTimer);
+		clicks++;
+		if (clicks < 3) {
+			navigationTimer = setTimeout(() => { clicks = 0; window.location.assign(wordmark.href); }, 450);
+			return;
+		}
+		clicks = 0;
+		loginPopup = window.open(`${origin}/auth`, "akn20-wordmark-login", "popup,width=600,height=720");
+		if (!loginPopup) {
+			window.location.assign(nav.dataset.editPath ?? wordmark.href);
+			return;
+		}
+		say(zh ? "请在 GitHub 窗口完成作者登录。" : "Complete owner sign-in in the GitHub window.");
+	});
+	window.addEventListener("message", async (event: MessageEvent) => {
+		if (!origin || !nav || !loginPopup || event.origin !== origin || event.source !== loginPopup || !event.data || event.data.type !== "akn20-auth") return;
+		loginPopup = null;
+		if (typeof event.data.token !== "string") {
+			say(event.data.error === "forbidden" ? (zh ? "该账号没有作者权限。" : "This account is not the owner.") : (zh ? "登录未完成，请重试。" : "Sign-in did not complete. Please try again."));
+			return;
+		}
+		try {
+			const result = await fetch(`${origin}/session`, { headers: { Authorization: `Bearer ${event.data.token}` }, cache: "no-store" });
+			if (!result.ok || (await result.json()).id !== 245514160) throw new Error("Unauthorized");
+			sessionStorage.setItem(key, event.data.token);
+			document.dispatchEvent(new Event("akn20-session-change"));
+			window.location.assign(nav.dataset.editPath ?? wordmark?.href ?? "/");
+		} catch { say(zh ? "登录验证失败，请重试。" : "Sign-in verification failed. Please try again."); }
+	});
 </script>
 
 <style>
@@ -122,6 +168,8 @@ const languageIcon =
 		margin-bottom: 72px;
 	}
 	.wordmark {
+		touch-action: manipulation;
+		user-select: none;
 		font-family: var(--type-header-wordmark-family);
 		font-size: var(--type-header-wordmark-size);
 		font-weight: var(--type-header-wordmark-weight);
@@ -132,6 +180,15 @@ const languageIcon =
 	}
 	.wordmark:hover {
 		color: hsl(var(--theme-accent));
+	}
+	.login-feedback {
+		font-family: var(--font-sans);
+		font-size: 13px;
+		padding: 12px 16px;
+		border: 1px solid var(--hairline);
+		border-radius: 4px;
+		color: hsl(var(--theme-text-muted));
+		margin: 0 0 24px;
 	}
 	.header-right {
 		display: flex;

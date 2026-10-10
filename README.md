@@ -77,6 +77,10 @@ translationKey: my-note
 
 The editor entry is intentionally absent from public navigation. Bookmark
 `/admin/` (Chinese: `/zh/admin/`) to open it directly.
+Alternatively, rapidly click or tap the header's **akn20** wordmark three times to
+open the GitHub sign-in popup. Consecutive clicks must be within 450ms of each other;
+ordinary single-click navigation waits that briefly. Keyboard/modifier link actions
+keep their usual behavior. If popups are blocked, the gesture opens the admin page.
 The entry page has GitHub sign-in and tab-session handling. The Worker in `auth/`
 verifies the owner identity, using OAuth state validation and PKCE; deployment setup
 is described in [auth/README.md](auth/README.md). Login remains disabled while the
