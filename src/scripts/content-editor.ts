@@ -1,6 +1,7 @@
 import { parse } from "yaml";
 import { authOrigin } from "@/data/auth";
 import { importMarkdown } from "./markdown-import";
+import { withBase } from "@/utils/path";
 
 export function initContentEditor() {
 	const root = document.getElementById("content-editor");
@@ -121,7 +122,17 @@ export function initContentEditor() {
 	aboutLocale.addEventListener("change", () => { void run(loadAbout); });
 	document.getElementById("save-about")?.addEventListener("click", () => { void run(async () => { const saved = await api("about", "PUT", { locale: aboutLocale.value, body: about.value, sha: aboutSha }); aboutSha = saved.sha; }, true); });
 	const title = document.getElementById("site-title") as HTMLInputElement;
-	document.getElementById("save-settings")?.addEventListener("click", () => { void run(async () => { const saved = await api("settings", "PUT", { value: { title: title.value }, sha: titleSha }); titleSha = saved.sha; }, true); });
+	let avatar: string | null = null;
+	const preview = document.getElementById("avatar-preview") as HTMLImageElement;
+	const avatarFile = document.getElementById("avatar-file") as HTMLInputElement;
+	function showAvatar() { preview.hidden = !avatar; if (avatar) preview.src = avatar.startsWith("data:") ? avatar : withBase(avatar); else preview.removeAttribute("src"); }
+	avatarFile.addEventListener("change", () => { const file = avatarFile.files?.[0]; avatarFile.value = ""; if (!file || busy) return; void run(async () => {
+		if (!["image/jpeg","image/png","image/webp"].includes(file.type) || file.size > 5 * 1024 * 1024) throw Error("请选择 5 MB 以内的 JPG、PNG 或 WebP 图片。");
+		const image = await createImageBitmap(file);
+		try { const canvas = document.createElement("canvas"); canvas.width = 256; canvas.height = 256; const ctx = canvas.getContext("2d"); if (!ctx) throw Error("当前浏览器不支持图片处理。"); const size = Math.min(image.width, image.height); ctx.fillStyle = "#ffffff"; ctx.fillRect(0,0,256,256); ctx.drawImage(image,(image.width-size)/2,(image.height-size)/2,size,size,0,0,256,256); const result = canvas.toDataURL("image/jpeg", 0.85); if (result.length > 120000) throw Error("图片压缩后仍过大，请换一张图片。"); avatar = result; showAvatar(); } finally { image.close(); }
+	}); });
+	document.getElementById("remove-avatar")?.addEventListener("click", () => { avatar = null; showAvatar(); say("头像已从预览移除，点击保存后生效。"); });
+	document.getElementById("save-settings")?.addEventListener("click", () => { void run(async () => { const saved = await api("settings", "PUT", { value: { title: title.value, avatar }, sha: titleSha }); titleSha = saved.sha; }, true); });
 	root.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((button) => { button.addEventListener("click", () => { root.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => { panel.hidden = panel.dataset.panel !== button.dataset.tab; }); }); });
 	const updateEditor = () => {
 		if (!sessionStorage.getItem("akn20-owner-session")) { root.hidden = true; initialized = false; return; }
@@ -136,7 +147,7 @@ export function initContentEditor() {
 			if (initialized) return;
 			await refreshArticles();
 			const projects = await api("projects"); projectsSha = projects.sha; cards.replaceChildren(); projects.value.forEach(addProject);
-			const settings = await api("settings"); titleSha = settings.sha; title.value = settings.value.title;
+			const settings = await api("settings"); titleSha = settings.sha; title.value = settings.value.title; avatar = settings.value.avatar ?? null; showAvatar();
 			aboutLocale.value = root.dataset.locale ?? "zh"; await loadAbout(); newArticle(); initialized = true;
 		});
 	};

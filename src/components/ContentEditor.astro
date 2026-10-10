@@ -8,7 +8,7 @@ const { locale } = Astro.props;
 		<button type="button" data-tab="articles">文章 / Articles</button>
 		<button type="button" data-tab="projects">项目 / Projects</button>
 		<button type="button" data-tab="about">关于 / About</button>
-		<button type="button" data-tab="settings">站点名称 / Site title</button>
+		<button type="button" data-tab="settings">站点设置 / Settings</button>
 	</nav>
 	<p id="editor-status" role="status" aria-live="polite"></p>
 	<div data-panel="articles">
@@ -38,9 +38,13 @@ const { locale } = Astro.props;
 		<button id="save-about" type="button">保存 About</button>
 	</div>
 	<div data-panel="settings" hidden>
+		<label>头像 <input id="avatar-file" type="file" accept="image/jpeg,image/png,image/webp" /></label>
+		<img id="avatar-preview" alt="头像预览" width="88" height="88" hidden style="border-radius:50%;object-fit:cover;margin:12px 0;" />
+		<button id="remove-avatar" type="button">移除头像</button>
+		<p class="editor-note">支持 JPG、PNG、WebP（最大 5 MB）。自动居中裁切并压缩，点击保存后同步到首页。</p>
 		<label>网站名称 <input id="site-title" maxlength="60" required /></label>
 		<p class="editor-note">修改的是网站显示名称，仓库名称和网址保持不变。</p>
-		<button id="save-settings" type="button">保存站点名称</button>
+		<button id="save-settings" type="button">保存站点设置</button>
 	</div>
 </section>
 <style>

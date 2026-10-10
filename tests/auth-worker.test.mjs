@@ -5,6 +5,23 @@ import worker, { handleRequest } from "../auth/worker.mjs";
 const origin = "https://akn20-auth.example.workers.dev";
 const editor = "https://misumiuika626.github.io";
 const env = { PUBLIC_URL: origin, GITHUB_CLIENT_ID: "test-client", GITHUB_CLIENT_SECRET: "test-client-secret", SESSION_SECRET: "test-session-secret-with-at-least-32-characters" };
+test("settings save validates avatar and preserves it for older title-only clients", async () => {
+ const { message } = await callback();
+ const headers = { Origin: editor, Authorization: `Bearer ${message.token}` };
+ let stored = { title: "akn20", avatar: "/avatar.webp" };
+ const fetcher = async (_url, options) => {
+  if (!options.method) return Response.json({ sha: "a".repeat(40), content: Buffer.from(JSON.stringify(stored)).toString("base64") });
+  stored = JSON.parse(Buffer.from(JSON.parse(options.body).content, "base64").toString());
+  return Response.json({ content: { sha: "b".repeat(40) }, commit: { sha: "c".repeat(40) } });
+ };
+ const put = value => handleRequest(new Request(`${origin}/content/settings`, { method: "PUT", headers, body: JSON.stringify({ sha: "a".repeat(40), value }) }), env, fetcher);
+ assert.equal((await put({title: "New"})).status, 200);
+ assert.equal(stored.avatar, "/avatar.webp");
+ assert.equal((await put({title: "New", avatar: "data:image/svg+xml;base64,PHN2Zz4="})).status, 400);
+ assert.equal((await put({title: "New", avatar: "data:image/jpeg;base64,aGVsbG8="})).status, 400);
+ assert.equal((await put({title: "New", avatar: null})).status, 200);
+ assert.equal(stored.avatar, null);
+});
 async function begin() {
 	const res = await handleRequest(new Request(`${origin}/auth`), env);
 	return { res, target: new URL(res.headers.get("Location")), cookie: res.headers.get("Set-Cookie").split(";")[0] };

@@ -127,6 +127,16 @@ export async function handleContent(request, session, fetcher = fetch) {
 		return save(`src/content/page/${language === "zh" ? "zh/" : ""}about.md`, `---\ntitle: ${JSON.stringify(language === "zh" ? "关于" : "About")}\n---\n\n${text(data.body, "About body", 100_000)}\n`, data.sha);
 	}
 	if (url.pathname === "/content/projects") return save(PROJECT_PATH, `${JSON.stringify(projectsData(data.value), null, 2)}\n`, data.sha);
-	if (url.pathname === "/content/settings") return save(TITLE_PATH, `${JSON.stringify({ title: text(data.value?.title, "site title", 60, 1) }, null, 2)}\n`, data.sha);
+	if (url.pathname === "/content/settings") {
+		const title = text(data.value?.title, "site title", 60, 1);
+		let avatar = data.value.avatar;
+		if (avatar === undefined) { const current = await read(TITLE_PATH); avatar = JSON.parse(current.content || "{}").avatar ?? null; }
+		if (avatar !== null && avatar !== "/avatar.webp") {
+			if (typeof avatar !== "string" || avatar.length > 120000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(avatar)) fail("Invalid avatar: use a compressed JPEG image.");
+			let bytes; try { bytes = atob(avatar.split(",")[1]); } catch { fail("Invalid avatar"); }
+			if (bytes.length < 4 || bytes.charCodeAt(0) !== 255 || bytes.charCodeAt(1) !== 216 || bytes.charCodeAt(bytes.length - 2) !== 255 || bytes.charCodeAt(bytes.length - 1) !== 217) fail("Invalid avatar image");
+		}
+		return save(TITLE_PATH, `${JSON.stringify({ title, avatar }, null, 2)}\n`, data.sha);
+	}
 	fail("Not found", 404);
 }

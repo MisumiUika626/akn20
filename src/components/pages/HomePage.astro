@@ -9,6 +9,7 @@ import { siteConfig } from "@/site-config";
 import { formatRailDate, formatStampDate } from "@/utils/date";
 import { absoluteUrl, withBase } from "@/utils/path";
 import { Schema } from "astro-seo-schema";
+import settings from "@/data/site-settings.json";
 
 interface Props {
 	locale: Locale;
@@ -59,6 +60,7 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 
 	<PageLayout locale={locale} meta={{ alternatePath: "/", title: t.nav["/"], description }}>
 	<section class="hero">
+		{settings.avatar && <img class="home-avatar" src={settings.avatar.startsWith("data:") ? settings.avatar : withBase(settings.avatar)} alt={locale === "zh" ? "博主头像" : "Author avatar"} width="88" height="88" />}
 		<h1>{siteConfig.title}</h1>
 		<div class="socials">
 			{profile?.github && (
@@ -159,6 +161,7 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	.hero {
 		margin-bottom: 76px;
 	}
+	.home-avatar { width: 88px; height: 88px; object-fit: cover; border-radius: 50%; margin-bottom: 18px; border: 1px solid #d8d5ce; }
 	.hero h1 {
 		font-family: var(--type-heading-1-family);
 		font-size: clamp(28px, 5vw, 42px);
