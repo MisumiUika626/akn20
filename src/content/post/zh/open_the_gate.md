@@ -1,7 +1,7 @@
 ---
 title: "OPEN THE G☆TE!!!"
 publishDate: "2026-10-11"
-description: "OPEN THE G☆TE!!!"
+description: "hello,world!"
 category: "杂记"
 tags: ["杂记","lovelive"]
 draft: false
@@ -17,3 +17,4 @@ translationKey: "OPEN THE G☆TE!!!"
 [YouTube｜Liella!「OPEN THE G☆TE!!!」Music Video](https://www.youtube.com/watch?v=mKRNpQ8nfD0)
 
 [Bilibili｜Liella!「OPEN THE G☆TE!!!」Music Video](https://www.bilibili.com/video/BV1kC1nBCE5R/)
+
