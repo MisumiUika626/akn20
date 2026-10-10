@@ -75,7 +75,8 @@ translationKey: my-note
 
 ## Personalization / 个性化
 
-The header's **Edit / 编辑** entry opens `/admin/` (Chinese: `/zh/admin/`).
+The editor entry is intentionally absent from public navigation. Bookmark
+`/admin/` (Chinese: `/zh/admin/`) to open it directly.
 The entry page is live, but authentication is not configured and its login control
 is disabled. It currently provides no write or publish operation. Connect the
 owner-only authentication service before enabling an actual editor.
