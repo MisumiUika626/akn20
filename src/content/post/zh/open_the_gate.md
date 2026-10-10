@@ -18,3 +18,4 @@ translationKey: "OPEN THE G☆TE!!!"
 
 [Bilibili｜Liella!「OPEN THE G☆TE!!!」Music Video](https://www.bilibili.com/video/BV1kC1nBCE5R/)
 
+
