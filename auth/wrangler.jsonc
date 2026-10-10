@@ -1,0 +1,10 @@
+{
+  "name": "akn20-auth",
+  "main": "worker.mjs",
+  "compatibility_date": "2026-10-10",
+  "workers_dev": true,
+  "vars": {
+    "PUBLIC_URL": "https://akn20-auth.akn20.workers.dev",
+    "GITHUB_CLIENT_ID": "Ov23lirFdsFAYE72U84T"
+  }
+}

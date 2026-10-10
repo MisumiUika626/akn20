@@ -77,9 +77,10 @@ translationKey: my-note
 
 The editor entry is intentionally absent from public navigation. Bookmark
 `/admin/` (Chinese: `/zh/admin/`) to open it directly.
-The entry page is live, but authentication is not configured and its login control
-is disabled. It currently provides no write or publish operation. Connect the
-owner-only authentication service before enabling an actual editor.
+The entry page has GitHub sign-in and tab-session handling. The Worker in `auth/`
+verifies the owner identity, using OAuth state validation and PKCE; deployment setup
+is described in [auth/README.md](auth/README.md). Login remains disabled while the
+public service URL is empty. Content writing/publishing is a separate pending feature.
 
 | File | Purpose |
 | --- | --- |

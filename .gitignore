@@ -28,3 +28,6 @@ temp/
 .local-tools/
 .local-cache/
 work/
+.wrangler/
+.dev.vars
+.dev.vars.*

@@ -1,8 +1,9 @@
 # Owner-only editing
 
-Status: owner-only requirements and repository access checked. A bilingual admin
-entry page is implemented; its login control is disabled. The actual editor and
-authentication service are not yet deployed.
+Status: owner-only GitHub identity login implemented. The authentication service
+is deployed at `https://akn20-auth.akn20.workers.dev`. The blog is connected to it.
+Content editing and publication are a separate pending feature. A real owner login
+must be completed in the published browser page before claiming end-to-end validation.
 
 ## Confirmed requirements
 
@@ -43,10 +44,20 @@ required, select private storage before enabling that workflow.
 
 ## Deployment dependency
 
-Actual login/publishing requires a Cloudflare account deployment and registration
-of the owner's GitHub OAuth application. Account ownership, service URL and OAuth
-registration have not yet been provided. Do not present an unconfigured admin as
-a functioning editor or claim owner-only protection without end-to-end validation.
+Cloudflare was authorized by the owner and the account email was verified. The
+Worker is deployed, its session secret generated server-side, and the GitHub OAuth
+application configured. Its public client ID is `Ov23lirFdsFAYE72U84T`; client and
+session secrets are Cloudflare encrypted bindings. No secret values belong in Git.
+The current login requests identity access (`read:user`), not repository-write scope,
+and returns an app session rather than a GitHub token to the frontend. It does not
+yet expose content-management operations.
+
+Verification: 36 automated tests passed, including mocked OAuth/owner checks,
+bad/expired state, forged/expired sessions and denied origins. Browser tests with
+mocked session responses covered guest hiding, owner-only navigation, restored
+sessions, forged popup rejection and logout. Live Worker checks confirmed the GitHub
+redirect, PKCE, secure cookie, anonymous denial, invalid-state denial and origin denial.
+These tests do not substitute for a human completing a real GitHub OAuth sign-in.
 
 The intended initial cost is the free service tiers; paid subscriptions and a custom
 domain require a separate user purchase decision. Reference documentation:

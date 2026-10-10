@@ -3,6 +3,7 @@ import { localizedPath, messages, type Locale } from "@/i18n/config";
 import { menuLinks, siteConfig } from "@/site-config";
 import { withBase } from "@/utils/path";
 import ThemeToggle from "../ThemeToggle.astro";
+import { authOrigin } from "@/data/auth";
 
 interface Props {
 	locale: Locale;
@@ -44,7 +45,7 @@ const languageIcon =
 <header class="site-header" id="main-header">
 		<a href={withBase(localizedPath(locale, "/"))} class="wordmark">{wordmark}</a>
 	<div class="header-right">
-			<nav class="nav" aria-label={locale === "zh" ? "主导航" : "Primary"}>
+			<nav class="nav" id="primary-nav" data-auth-origin={authOrigin} data-edit-path={withBase(localizedPath(locale, "/admin/"))} data-edit-label={t.nav["/admin/"]} aria-label={locale === "zh" ? "主导航" : "Primary"}>
 			{
 				visibleMenuLinks.map((link) => (
 					<a
@@ -84,6 +85,33 @@ const languageIcon =
 			<ThemeToggle locale={locale} />
 	</div>
 </header>
+
+<script>
+	const nav = document.getElementById("primary-nav");
+	const origin = nav?.dataset.authOrigin;
+	const key = "akn20-owner-session";
+	async function updateOwnerLink() {
+		if (!nav || !origin) return;
+		let token: string | null = null;
+		try { token = sessionStorage.getItem(key); } catch { /* No session. */ }
+		if (!token) { nav.querySelector(".owner-edit-link")?.remove(); return; }
+		try {
+			const res = await fetch(`${origin}/session`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+			if (!res.ok || (await res.json()).id !== 245514160 || sessionStorage.getItem(key) !== token) {
+				nav.querySelector(".owner-edit-link")?.remove(); return;
+			}
+			if (!nav.querySelector(".owner-edit-link")) {
+				const link = document.createElement("a");
+				link.className = "owner-edit-link";
+				link.href = nav.dataset.editPath ?? "";
+				link.textContent = nav.dataset.editLabel ?? "Edit";
+				nav.insertBefore(link, nav.querySelector(".language-link"));
+			}
+		} catch { nav.querySelector(".owner-edit-link")?.remove(); }
+	}
+	document.addEventListener("akn20-session-change", () => { void updateOwnerLink(); });
+	void updateOwnerLink();
+</script>
 
 <style>
 	.site-header {

@@ -2,6 +2,7 @@
 import PageLayout from "@/layouts/Base.astro";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { withBase } from "@/utils/path";
+import { authOrigin } from "@/data/auth";
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const zh = locale === "zh";
@@ -11,11 +12,12 @@ const zh = locale === "zh";
 		<p class="section-label">{zh ? "作者工作台" : "AUTHOR WORKSPACE"}</p>
 		<h1 id="editor-title">{zh ? "编辑后台" : "Editor"}</h1>
 		<p class="intro">{zh ? "这里是 akn20 的写作与内容管理入口。" : "The writing and content management workspace for akn20."}</p>
-		<div class="login-panel">
-			<p class="status">{zh ? "待连接登录服务" : "Authentication setup pending"}</p>
+		<div class="login-panel" id="owner-login" data-auth-origin={authOrigin} data-locale={locale}>
+			<p class="status" id="login-status" role="status">{authOrigin ? (zh ? "请登录作者账号" : "Sign in as the owner") : (zh ? "待部署登录服务" : "Authentication deployment pending")}</p>
 			<p>{zh ? "正式启用后，只有作者本人能够登录、编辑和发布内容。" : "Once configured, only the owner can sign in, edit and publish content."}</p>
-			<button type="button" disabled aria-describedby="login-note">{zh ? "使用 GitHub 登录" : "Sign in with GitHub"}</button>
-			<p id="login-note" class="note">{zh ? "登录尚未启用，当前无法修改或发布网站内容。" : "Sign-in is not enabled yet. Editing and publishing are currently unavailable."}</p>
+			<button id="login-button" type="button" disabled={!authOrigin} aria-describedby="login-note">{zh ? "使用 GitHub 登录" : "Sign in with GitHub"}</button>
+			<button id="logout-button" type="button" hidden>{zh ? "退出登录" : "Sign out"}</button>
+			<p id="login-note" class="note">{authOrigin ? (zh ? "登录仅验证作者身份，文章编辑与发布功能尚未接入。" : "Sign-in verifies owner identity; content editing and publishing are not connected yet.") : (zh ? "登录代码已准备好，需先部署登录服务并完成 GitHub 授权配置。当前无法修改或发布网站内容。" : "Login code is ready. Deploy the authentication service and configure GitHub OAuth to activate it. Editing and publishing are currently unavailable.")}</p>
 		</div>
 		<a class="back" href={withBase(localizedPath(locale, "/"))}>{zh ? "← 返回博客" : "← Back to the blog"}</a>
 	</section>
@@ -26,8 +28,75 @@ const zh = locale === "zh";
 	.intro { color: hsl(var(--theme-text-muted)); margin: 0 0 32px; }
 	.login-panel { border: 1px solid var(--hairline); border-radius: 6px; padding: 28px; margin-bottom: 28px; }
 	.status { font-family: var(--font-sans); font-size: 13px; color: hsl(var(--theme-accent)); margin-top: 0; }
-	button { font-family: var(--font-sans); font-size: 14px; padding: 12px 18px; border-radius: 4px; border: 1px solid var(--hairline); background: var(--accent-soft); color: hsl(var(--theme-text-muted)); cursor: not-allowed; }
+	button { font-family: var(--font-sans); font-size: 14px; padding: 12px 18px; border-radius: 4px; border: 1px solid var(--hairline); background: var(--accent-soft); color: hsl(var(--theme-text-muted)); cursor: pointer; }
+	button:disabled { cursor: not-allowed; opacity: 0.7; }
 	.note { font-size: 13px; color: hsl(var(--theme-text-muted)); margin: 16px 0 0; }
 	.back { font-size: 13px; text-decoration: underline; text-underline-offset: 4px; }
 	@media (max-width: 420px) { .login-panel { padding: 20px; } }
 </style>
+
+<script>
+	const panel = document.getElementById("owner-login");
+	const origin = panel?.dataset.authOrigin;
+	const zh = panel?.dataset.locale === "zh";
+	const login = document.getElementById("login-button") as HTMLButtonElement | null;
+	const logout = document.getElementById("logout-button") as HTMLButtonElement | null;
+	const status = document.getElementById("login-status");
+	const storageKey = "akn20-owner-session";
+	let popup: Window | null = null;
+	let timer: ReturnType<typeof setInterval> | undefined;
+	let expiryTimer: ReturnType<typeof setTimeout> | undefined;
+	const say = (message: string) => { if (status) status.textContent = message; };
+	const clear = () => {
+		if (expiryTimer) clearTimeout(expiryTimer);
+		try { sessionStorage.removeItem(storageKey); } catch { /* Storage can be disabled. */ }
+		if (logout) logout.hidden = true;
+		if (login) { login.hidden = false; login.disabled = !origin; }
+		document.dispatchEvent(new Event("akn20-session-change"));
+	};
+	async function validate(token: string): Promise<boolean> {
+		if (!origin) return false;
+		try {
+			const result = await fetch(`${origin}/session`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+			if (!result.ok) return false;
+			const owner = await result.json();
+			if (owner.id !== 245514160) return false;
+			if (expiryTimer) clearTimeout(expiryTimer);
+			expiryTimer = setTimeout(() => { clear(); say(zh ? "登录已失效，请重新登录。" : "Session expired. Please sign in again."); }, Math.max(0, owner.expiresAt - Date.now()));
+			try { sessionStorage.setItem(storageKey, token); } catch { /* Do not persist if unavailable. */ }
+			if (login) { login.hidden = true; login.disabled = true; }
+			if (logout) logout.hidden = false;
+			say(zh ? `已登录：${owner.login}（作者）` : `Signed in: ${owner.login} (owner)`);
+			document.dispatchEvent(new Event("akn20-session-change"));
+			return true;
+		} catch { return false; }
+	}
+	if (origin && login) {
+		login.addEventListener("click", () => {
+			popup = window.open(`${origin}/auth`, "akn20-owner-login", "popup,width=600,height=720");
+			if (!popup) { say(zh ? "请允许登录弹窗后重试。" : "Allow the sign-in popup and try again."); return; }
+			login.disabled = true;
+			say(zh ? "请在 GitHub 窗口完成登录。" : "Complete sign-in in the GitHub window.");
+			if (timer) clearInterval(timer);
+			timer = setInterval(() => {
+				if (popup?.closed) {
+					if (timer) clearInterval(timer);
+					login.disabled = false;
+				}
+			}, 500);
+		});
+		window.addEventListener("message", async (event: MessageEvent) => {
+			if (event.origin !== origin || event.source !== popup || !event.data || event.data.type !== "akn20-auth") return;
+			if (timer) clearInterval(timer);
+			popup = null;
+			if (typeof event.data.token === "string" && await validate(event.data.token)) return;
+			clear();
+			say(event.data.error === "forbidden" ? (zh ? "该账号没有作者权限。" : "This account is not the owner.") : (zh ? "登录未完成，请重试。" : "Sign-in did not complete. Please try again."));
+		});
+		logout?.addEventListener("click", () => { clear(); say(zh ? "已退出登录。" : "Signed out."); });
+		try {
+			const saved = sessionStorage.getItem(storageKey);
+			if (saved) void validate(saved).then((valid) => { if (!valid) { clear(); say(zh ? "登录已失效，请重新登录。" : "Session expired. Please sign in again."); } });
+		} catch { /* No saved session when storage is unavailable. */ }
+	}
+</script>
