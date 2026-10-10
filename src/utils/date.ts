@@ -1,8 +1,12 @@
 import { defaultLocale, type Locale } from "@/i18n/config";
-import { formatLocalizedDate, formatReadingTime } from "@/i18n/format";
+import { formatReadingTime } from "@/i18n/format";
 import { siteConfig } from "@/site-config";
 
-const dateFormat = new Intl.DateTimeFormat(siteConfig.date.locale, siteConfig.date.options);
+const numericDateFormat = new Intl.DateTimeFormat("en-US", {
+	day: "numeric",
+	month: "numeric",
+	year: "numeric",
+});
 
 export function getFormattedDate(
 	date: string | number | Date,
@@ -15,27 +19,28 @@ export function getFormattedDate(
 		});
 	}
 
-	return dateFormat.format(new Date(date));
+	return numericDateFormat.format(new Date(date));
 }
 
-/** Short rail date: `5 Mar 2026`. */
-export function formatRailDate(date: Date, locale: Locale = defaultLocale): string {
-	return formatLocalizedDate(date, locale, { day: "numeric", month: "short", year: "numeric" });
+/** Site-wide numeric date: `3/5/2026`. */
+function formatNumericDate(date: Date): string {
+	return numericDateFormat.format(date);
 }
 
-/** Featured-card stamp: `March 2026`. */
-export function formatStampDate(date: Date, locale: Locale = defaultLocale): string {
-	return formatLocalizedDate(date, locale, { month: "long", year: "numeric" });
+export function formatRailDate(date: Date, _locale: Locale = defaultLocale): string {
+	return formatNumericDate(date);
 }
 
-/** Article byline date: `5 March 2026`. */
-export function formatBylineDate(date: Date, locale: Locale = defaultLocale): string {
-	return formatLocalizedDate(date, locale, { day: "numeric", month: "long", year: "numeric" });
+export function formatStampDate(date: Date, _locale: Locale = defaultLocale): string {
+	return formatNumericDate(date);
 }
 
-/** Article eyebrow date: `March 2026`. */
-export function formatEyebrowDate(date: Date, locale: Locale = defaultLocale): string {
-	return formatLocalizedDate(date, locale, { month: "long", year: "numeric" });
+export function formatBylineDate(date: Date, _locale: Locale = defaultLocale): string {
+	return formatNumericDate(date);
+}
+
+export function formatEyebrowDate(date: Date, _locale: Locale = defaultLocale): string {
+	return formatNumericDate(date);
 }
 
 export { formatReadingTime };
