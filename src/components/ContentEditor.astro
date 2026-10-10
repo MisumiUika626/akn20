@@ -12,6 +12,9 @@ const { locale } = Astro.props;
 	</nav>
 	<p id="editor-status" role="status" aria-live="polite"></p>
 	<div data-panel="articles">
+		<button id="import-markdown" type="button">导入 Markdown / Import .md</button>
+		<input id="markdown-file" type="file" accept=".md,text/markdown" hidden />
+		<p class="editor-note">选择 .md 文件自动填入文章，确认后再保存。仅导入文本，本地图片不会自动上传；未提供草稿状态时默认作为草稿。</p>
 		<div class="editor-row"><select id="article-list" aria-label="选择文章"><option value="">新建文章 / New article</option></select><button id="new-article" type="button">新建</button><button id="refresh-articles" type="button">刷新列表</button></div>
 		<form id="article-form">
 			<div class="editor-row"><label>语言 <select name="locale"><option value="zh">中文</option><option value="en">English</option></select></label><label>文件名 <input name="slug" required pattern="[a-z0-9][a-z0-9_-]{0,79}" placeholder="my-first-post" /></label></div>

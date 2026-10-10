@@ -1,5 +1,6 @@
 import { parse } from "yaml";
 import { authOrigin } from "@/data/auth";
+import { importMarkdown } from "./markdown-import";
 
 export function initContentEditor() {
 	const root = document.getElementById("content-editor");
@@ -71,6 +72,24 @@ export function initContentEditor() {
 	}, true); });
 	document.getElementById("new-article")?.addEventListener("click", () => { if (!formDirty() || confirm("放弃当前未保存的文章修改？")) newArticle(); });
 	function formDirty() { return !!input("title").value || !!input("body").value; }
+	const markdownFile = document.getElementById("markdown-file") as HTMLInputElement;
+	document.getElementById("import-markdown")?.addEventListener("click", () => { if (!busy) markdownFile.click(); });
+	markdownFile.addEventListener("change", async () => {
+		const file = markdownFile.files?.[0]; markdownFile.value = "";
+		if (!file || busy) return;
+		try {
+			if (!/\.md$/i.test(file.name)) throw Error("请选择 .md 文件。");
+			if (file.size > 400000) throw Error("文件过大，最多支持 400 KB。");
+			const token = sessionStorage.getItem("akn20-owner-session");
+			const imported = importMarkdown(await file.text(), file.name, input("locale").value, new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0,10));
+			if (busy || !token || sessionStorage.getItem("akn20-owner-session") !== token) return;
+			if (formDirty() && !confirm("导入为新文章会替换当前编辑表单，未保存的修改会丢失。继续？")) return;
+			newArticle();
+			for (const name of ["title","slug","locale","description","publishDate","category","tags","translationKey","body"] as const) input(name).value = imported[name];
+			input("draft").checked = imported.draft;
+			say(["已导入为新文章，尚未保存。请检查摘要、文件名等必填项后点击保存。", ...imported.warnings].join(" "));
+		} catch (error) { say(error instanceof Error ? error.message : "导入失败，当前内容未修改。"); }
+	});
 	document.getElementById("refresh-articles")?.addEventListener("click", () => { void run(refreshArticles); });
 	buttonDelete.addEventListener("click", () => { if (articlePath && confirm("确定删除这篇文章？删除会同步到 GitHub 和网站。")) void run(async () => { await api("post", "DELETE", { path: articlePath, sha: articleSha }); newArticle(); await refreshArticles(); }, true); });
 	const cards = document.getElementById("project-items") as HTMLElement;
