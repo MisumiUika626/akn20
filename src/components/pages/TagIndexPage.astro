@@ -1,5 +1,5 @@
 ---
-import { getPostsForLocale, getUniqueTagsWithCount, sortMDByDate } from "@/data/post";
+import { getAllPosts, getUniqueTagsWithCount, sortMDByDate } from "@/data/post";
 import { localizedPath, messages, type Locale } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
 import { withBase } from "@/utils/path";
@@ -10,7 +10,7 @@ interface Props {
 
 const { locale } = Astro.props;
 const t = messages[locale];
-const posts = sortMDByDate(await getPostsForLocale(locale));
+const posts = sortMDByDate(await getAllPosts());
 const tags = getUniqueTagsWithCount(posts);
 
 const meta = {

@@ -1,10 +1,10 @@
 ---
 import TagArchivePage from "@/components/pages/TagArchivePage.astro";
-import { getPostsByTag, getPostsForLocale, getUniqueTags, sortMDByDate } from "@/data/post";
+import { getAllPosts, getPostsByTag, getUniqueTags, sortMDByDate } from "@/data/post";
 import type { GetStaticPaths } from "astro";
 
 export const getStaticPaths = (async () => {
-	const posts = sortMDByDate(await getPostsForLocale("en"));
+	const posts = sortMDByDate(await getAllPosts());
 	return getUniqueTags(posts).map((tag) => ({
 		params: { tag },
 		props: { posts: getPostsByTag(posts, tag), tag },
