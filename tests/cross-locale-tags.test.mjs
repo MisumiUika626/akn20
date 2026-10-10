@@ -23,3 +23,17 @@ test("mixed-locale post lists link each post to its own locale route", async () 
 	assert.match(postList, /localizedPath\(postLocaleFromId\(p\.id\)/);
 	assert.match(postList, /formatRailDate\(getPostSortDate\(p\), postLocaleFromId\(p\.id\)\)/);
 });
+
+test("home and blog archives aggregate posts across locales", async () => {
+	const [homePage, englishArchive, chineseArchive] = await Promise.all([
+		readSource("src/components/pages/HomePage.astro"),
+		readSource("src/pages/posts/[...page].astro"),
+		readSource("src/pages/zh/posts/[...page].astro"),
+	]);
+
+	for (const source of [homePage, englishArchive, chineseArchive]) {
+		assert.match(source, /getAllPosts/);
+		assert.doesNotMatch(source, /getPostsForLocale/);
+	}
+	assert.match(homePage, /localizedPath\(featuredLocale, `\/posts\//);
+});

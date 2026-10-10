@@ -1,9 +1,9 @@
 ---
 import PostList from "@/components/blog/PostList.astro";
 import ShowcaseBadge from "@/components/showcase/ShowcaseBadge.astro";
-import { getPostSlug, getPostSortDate, getPostsForLocale, sortMDByDate } from "@/data/post";
+import { getAllPosts, getPostSlug, getPostSortDate, sortMDByDate } from "@/data/post";
 import { getFeaturedShowcase, showcase } from "@/data/showcase";
-import { defaultLocale, localizedPath, messages, type Locale } from "@/i18n/config";
+import { defaultLocale, localizedPath, messages, postLocaleFromId, type Locale } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
 import { siteConfig } from "@/site-config";
 import { formatRailDate, formatStampDate } from "@/utils/date";
@@ -18,11 +18,12 @@ interface Props {
 const { locale } = Astro.props;
 const t = messages[locale];
 const description = locale === defaultLocale ? siteConfig.description : t.homeDescription;
-const allPosts = await getPostsForLocale(locale);
+const allPosts = await getAllPosts();
 const allPostsByDate = sortMDByDate(allPosts);
 const TIMELINE_LIMIT = 5;
 const timelinePosts = allPostsByDate.slice(0, TIMELINE_LIMIT);
 const featured = timelinePosts[0];
+const featuredLocale = featured ? postLocaleFromId(featured.id) : locale;
 const rest = timelinePosts.slice(1);
 const archiveCount = allPosts.length;
 const featuredShowcase = getFeaturedShowcase();
@@ -93,14 +94,14 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 					<div class="post featured" style="--i: 0">
 						<div class="post-rail">
 							<time class="post-date" datetime={getPostSortDate(featured).toISOString()}>
-								{formatRailDate(getPostSortDate(featured), locale)}
+								{formatRailDate(getPostSortDate(featured), featuredLocale)}
 							</time>
 							<span class="post-dot" aria-hidden="true" />
 						</div>
 						<div class="post-body">
-							<div class="post-stamp">{t.latest} · {formatStampDate(getPostSortDate(featured), locale)}</div>
+							<div class="post-stamp">{t.latest} · {formatStampDate(getPostSortDate(featured), featuredLocale)}</div>
 							<h2 class="post-title">
-								<a class="post-cardlink" data-astro-prefetch href={withBase(localizedPath(locale, `/posts/${getPostSlug(featured)}/`))}>
+								<a class="post-cardlink" data-astro-prefetch href={withBase(localizedPath(featuredLocale, `/posts/${getPostSlug(featured)}/`))}>
 									{featured.data.title}
 								</a>
 							</h2>
