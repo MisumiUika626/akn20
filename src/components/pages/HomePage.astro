@@ -59,10 +59,7 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 
 	<PageLayout locale={locale} meta={{ alternatePath: "/", title: t.nav["/"], description }}>
 	<section class="hero">
-		<div class="section-label">{locale === "zh" ? "技术笔记 / TECHNICAL NOTEBOOK" : "TECHNICAL NOTEBOOK"}</div>
-		<h1>{locale === "zh" ? "把问题写清楚，把想法做出来。" : "Think carefully. Build small. Write it down."}</h1>
-		<p>{description}</p>
-		<div class="interests">{locale === "zh" ? "关注方向：计算机科学 · 算法与系统 · 可复现实验" : "Areas of interest: computer science · algorithms & systems · reproducible experiments"}</div>
+		<h1>{siteConfig.title}</h1>
 		<div class="socials">
 			{profile?.github && (
 				<>

@@ -3,13 +3,11 @@ import { readdir, readFile, stat } from "node:fs/promises";
 import test from "node:test";
 
 test("generated Chinese OG images pass raster sanity checks at the expected dimensions", async () => {
-	const chineseOgImages = (await readdir(new URL("../dist/og-image/zh/", import.meta.url))).filter(
-		(file) => file.endsWith(".png"),
-	);
-	assert.ok(chineseOgImages.length > 0, "missing generated Chinese OG images");
+	const files = await readdir(new URL("../dist/", import.meta.url), { recursive: true });
+	const chineseOgImages = files.filter((file) => file.startsWith("og-image/zh/") && file.endsWith(".png"));
 
 	for (const filename of chineseOgImages) {
-		const png = await readFile(new URL(`../dist/og-image/zh/${filename}`, import.meta.url));
+		const png = await readFile(new URL(`../dist/${filename}`, import.meta.url));
 
 		assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 		assert.equal(png.readUInt32BE(16), 1200, `${filename} width`);

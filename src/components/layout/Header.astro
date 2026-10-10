@@ -1,5 +1,4 @@
 ---
-import { showcase } from "@/data/showcase";
 import { localizedPath, messages, type Locale } from "@/i18n/config";
 import { menuLinks, siteConfig } from "@/site-config";
 import { withBase } from "@/utils/path";
@@ -18,10 +17,7 @@ const localizedMenuPaths = new Set(["/", "/about/", "/posts/", "/projects/", "/s
 const menuPath = (path: string) =>
 	localizedMenuPaths.has(path) ? localizedPath(locale, path) : path;
 
-const visibleMenuLinks = menuLinks.filter((link) => {
-	if (link.path === "/projects/" && showcase.length === 0) return false;
-	return true;
-});
+const visibleMenuLinks = menuLinks;
 
 const isActive = (path: string) => {
 	const target = withBase(menuPath(path));

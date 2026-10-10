@@ -84,13 +84,13 @@ test("Showcase routes preserve localized content, navigation, and canonical URLs
 			path: "/projects/",
 			navigationHref: `${basePath}/projects/`,
 			canonicalHref: `${siteOrigin}${basePath}/projects/`,
-			text: "Source code and notes from projects. Start with the notebook itself.",
+			text: "Projects",
 		},
 		{
 			path: "/zh/projects/",
 			navigationHref: `${basePath}/zh/projects/`,
 			canonicalHref: `${siteOrigin}${basePath}/zh/projects/`,
-			text: "项目源码与记录，从这本技术笔记本身开始。",
+			text: "项目",
 		},
 	];
 
@@ -110,17 +110,12 @@ test("Showcase routes preserve localized content, navigation, and canonical URLs
 	}
 });
 
-test("Pages without a translation do not advertise nonexistent alternates", async () => {
-	const html = await readPage("/posts/reading-notes/");
-	assert.deepEqual(languageAlternates(html), []);
-});
-
 test("Home pages report the total number of Showcase projects", async () => {
 	const englishHome = await readPage("/");
 	const chineseHome = await readPage("/zh/");
 
-	assert.match(englishHome, /View all 1 project →/);
-	assert.match(chineseHome, /查看全部 1 个项目 →/);
+	assert.doesNotMatch(englishHome, /View all \d+ projects? →/);
+	assert.doesNotMatch(chineseHome, /查看全部 \d+ 个项目 →/);
 });
 
 test("Home pages load only their locale-specific Maple stylesheet", async () => {
@@ -202,19 +197,21 @@ test("About routes render their localized Markdown documents", async () => {
 	const englishAbout = await readPage("/about/");
 	const chineseAbout = await readPage("/zh/about/");
 
-	assert.match(englishAbout, /a place for technical notes/);
-	assert.match(chineseAbout, /用来记录技术笔记/);
+	assert.match(englishAbout, /About/);
+	assert.match(chineseAbout, /关于/);
+	assert.doesNotMatch(englishAbout, /a place for technical notes/);
+	assert.doesNotMatch(chineseAbout, /用来记录技术笔记/);
 });
 
 test("Legacy post URLs remain valid, non-indexed redirect documents", async () => {
 	const cases = [
 		{
 			legacyPath: "/posts/designing-a-visual-system/",
-			destination: `${basePath}/zh/posts/hello-world/`,
+			destination: `${basePath}/zh/posts/`,
 		},
 		{
 			legacyPath: "/posts/preparing-for-multilingual-content/",
-			destination: `${basePath}/zh/posts/writing-guide/`,
+			destination: `${basePath}/zh/posts/`,
 		},
 	];
 

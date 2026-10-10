@@ -14,7 +14,7 @@ It was cloned into the requested empty WSL directory; existing history was retai
 Frozen dependency installation, lint, type-check/build, Pagefind and all **26**
 upstream tests passed before source customization.
 
-## V1 checks
+## Initial V1 checks (before content was cleared)
 
 `pnpm lint` and `pnpm test` passed. The latter performs type checking, static
 build with `/akn20/`, Pagefind generation and **31** passing integration tests.
@@ -60,3 +60,19 @@ and Chinese mobile layouts, theme persistence, welcome-article translation switc
 and actual full-text search all passed without browser page exceptions. The public
 Chinese home contains the expected V1 copy; the public Pagefind entry contains
 English and Chinese indexes. Local source and remote `main` were synchronized.
+
+## Content cleared at the owner's request
+
+All five sample articles, sample project entries, About bodies and introductory
+home copy were removed. Unused stock article images were removed as well. Site
+branding, bilingual routes, theme controls, article layouts, content schemas,
+RSS, categories, tags, Projects, About, search and automatic deployment remain.
+Deleted content is recoverable from Git history.
+
+The empty site passed lint, type-check/build and **28 tests**. Browser checks covered
+all seven primary route families in both languages and the 375px layout. The
+internal-reference audit checked **19 pages and 425 references**, with no failures.
+Pagefind has a truthful empty marker and the search UI stays hidden until articles
+exist. A separate disposable article fixture verified that normal indexing still
+works when content is present. The content loader clears old cached posts even
+when the content directory becomes empty.

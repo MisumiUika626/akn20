@@ -48,7 +48,8 @@ BASE_PATH=/akn20 pnpm preview
 
 Search uses the **production** index generated during `pnpm build`. English and
 Chinese are searched independently; switch the interface language to change corpus.
-The samples are explicitly labeled and do not represent research or personal results.
+Published content is currently empty. Add articles when ready; empty Blog, categories,
+tags and Projects routes remain available. Search shows an empty state until articles exist.
 
 ## Writing / 写作
 
@@ -86,7 +87,8 @@ translationKey: my-note
 
 Run `node scripts/brand-assets.mjs` after editing the icon or social-card source.
 About intentionally includes no invented employer, education, email or avatar.
-Replace the five sample articles with actual notes and add verified project entries.
+Write your own articles and add project entries when ready. Both About documents
+currently contain only metadata; their bodies are blank.
 Comments, analytics and webmentions remain optional configuration in `site.config.ts`.
 
 ## Verification and deployment

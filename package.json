@@ -10,7 +10,7 @@
 		"dev": "astro dev",
 		"start": "astro dev",
 		"build": "astro check && astro build",
-		"postbuild": "pagefind --site dist",
+		"postbuild": "node scripts/search-index.mjs",
 		"preview": "astro preview",
 		"test": "BASE_PATH=/akn20 pnpm build && node --test tests/*.test.mjs",
 		"lint": "biome lint . --error-on-warnings",

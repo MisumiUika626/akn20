@@ -8,8 +8,16 @@ function removeDupsAndLowerCase(array: string[]) {
 	return Array.from(distinctItems);
 }
 
+const postFiles = glob({ pattern: "**/*.{md,mdx}", base: "./src/content/post" });
 const post = defineCollection({
-	loader: glob({ pattern: "**/*.{md,mdx}", base: "./src/content/post" }),
+	loader: {
+		...postFiles,
+		async load(context) {
+			// Empty globs must also remove previously cached articles.
+			context.store.clear();
+			await postFiles.load(context);
+		},
+	},
 	schema: ({ image }) =>
 		z.object({
 			coverImage: z

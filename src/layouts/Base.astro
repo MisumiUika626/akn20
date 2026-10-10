@@ -22,7 +22,7 @@ const otherLocale = locale === "en" ? "zh" : "en";
 const switchPath = alternateUrls?.[otherLocale] ?? (alternatePath ? localizedPath(otherLocale, alternatePath) : undefined);
 ---
 
-<html class="scroll-smooth" lang={localeMeta[locale].htmlLang}>
+<html class="scroll-smooth" lang={localeMeta[locale].htmlLang} data-pagefind-ignore={articleDate ? undefined : "all"}>
 	<head>
 		<ThemeProvider />
 				<BaseHead alternatePath={alternatePath} alternateUrls={alternateUrls} articleDate={articleDate} description={description} locale={locale} ogImage={ogImage} title={title} />

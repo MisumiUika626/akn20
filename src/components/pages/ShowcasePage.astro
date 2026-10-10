@@ -48,7 +48,7 @@ const sortedShowcase = getShowcaseByPriority();
 >
 	<section class="work" aria-labelledby="work-label">
 		<div class="section-label" id="work-label">{t.showcase}</div>
-		<p class="intro">{t.showcaseDescription}</p>
+		{sortedShowcase.length > 0 && <p class="intro">{t.showcaseDescription}</p>}
 		<ul class="work-list">
 			{
 					sortedShowcase.map((item) => (

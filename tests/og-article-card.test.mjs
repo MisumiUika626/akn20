@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 import {
@@ -104,7 +104,9 @@ test("schema-maximum copy is bounded before it reaches the fixed-size layout", (
 });
 
 test("the production build emits 1200 by 630 article cards for both locales", async () => {
-	for (const path of ["../dist/og-image/hello-world.png", "../dist/og-image/zh/hello-world.png"]) {
+	const files = await readdir(new URL("../dist/", import.meta.url), { recursive: true });
+	for (const file of files.filter((file) => file.startsWith("og-image/") && file.endsWith(".png"))) {
+		const path = `../dist/${file}`;
 		const png = await readFile(new URL(path, import.meta.url));
 		assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 		assert.equal(png.readUInt32BE(16), 1200);

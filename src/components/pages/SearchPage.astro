@@ -2,13 +2,16 @@
 import { messages, type Locale } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
 import { withBase } from "@/utils/path";
+import { getPostsForLocale } from "@/data/post";
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const t = messages[locale];
 const bundlePath = withBase("/pagefind/");
+const hasPosts = (await getPostsForLocale(locale)).length > 0;
 ---
 <PageLayout locale={locale} meta={{ alternatePath: "/search/", title: t.search, description: locale === "zh" ? "搜索本站中文文章。" : "Search the English articles in this notebook." }}>
 	<h1 class="section-label">{t.search}</h1>
+	{hasPosts ? <Fragment>
 	<p>{locale === "zh" ? "按标题、内容、分类或标签查找中文文章。切换语言可搜索英文文章。" : "Find English articles by title, content, category or tag. Switch language to search Chinese articles."}</p>
 	<link rel="stylesheet" href={withBase("/pagefind/pagefind-ui.css")} />
 	<div id="search" data-pagefind-ignore></div>
@@ -32,6 +35,7 @@ const bundlePath = withBase("/pagefind/");
 			document.getElementById("search-status").textContent = locale === "zh" ? "搜索暂时无法加载。请通过博客或标签浏览文章。" : "Search could not load. Please browse the Blog or tags.";
 		}
 	</script>
+	</Fragment> : <p>{locale === "zh" ? "暂无文章。" : "No articles yet."}</p>}
 </PageLayout>
 <style>
 	#search { margin: 32px 0 72px; }

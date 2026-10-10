@@ -1,68 +1,40 @@
 import assert from "node:assert/strict";
-import { readFile, access } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const base = "/akn20";
-const origin = "https://misumiuika626.github.io";
 const read = (path) => readFile(new URL(`../dist${path}index.html`, import.meta.url), "utf8");
+const sources = await readdir(new URL("../src/content/post/", import.meta.url), { recursive: true });
+const empty = !sources.some((file) => /\.mdx?$/.test(file));
 
-test("Blog exposes working category, tag, search and project routes in both locales", async () => {
+test("Empty content preserves bilingual Blog, Projects, About and taxonomy routes", { skip: !empty }, async () => {
 	for (const prefix of ["", "/zh"]) {
-		const blog = await read(`${prefix}/posts/`);
-		for (const route of ["categories", "tags", "search", "projects"]) {
-			assert.ok(blog.includes(`${base}${prefix}/${route}/`), `${prefix} ${route} link`);
+		const home = await read(`${prefix}/`);
+		for (const route of ["posts", "projects", "about", "search", "categories", "tags"]) {
 			await read(`${prefix}/${route}/`);
+			assert.ok(home.includes(`${base}${prefix}/${route}/`), `${prefix} ${route} navigation`);
 		}
-		const category = prefix ? "笔记" : "Notes";
-		const index = await read(`${prefix}/categories/`);
-		assert.ok(index.includes(`${base}${prefix}/categories/${encodeURIComponent(category)}/`));
-		const archive = await read(`${prefix}/categories/${category}/`);
-		assert.match(archive, /hello-world/);
+		const blog = await read(`${prefix}/posts/`);
+		assert.match(blog, prefix ? /0 篇文章/ : /0 posts/);
+		const about = await read(`${prefix}/about/`);
+		assert.match(about, /class=bio[^>]*>\s*<\/div>|class="bio"[^>]*>\s*<\/div>/);
+		assert.doesNotMatch(home, /Think carefully|把问题写清楚|关注方向|Areas of interest/);
 	}
 });
 
-test("Paired posts advertise real translations and switch directly to the translated article", async () => {
-	for (const prefix of ["", "/zh"]) {
-		const html = await read(`${prefix}/posts/hello-world/`);
-		assert.ok(html.includes(`${origin}${base}/posts/hello-world/`));
-		assert.ok(html.includes(`${origin}${base}/zh/posts/hello-world/`));
-		assert.match(html, /hreflang=(?:"zh-CN"|zh-CN)/);
-		const otherPrefix = prefix ? "" : "/zh";
-		assert.ok(
-			html.includes(`href=${base}${otherPrefix}/posts/hello-world/`) ||
-				html.includes(`href="${base}${otherPrefix}/posts/hello-world/"`),
-		);
+test("No old sample articles or projects remain published", async () => {
+	for (const route of ["/", "/zh/", "/projects/", "/zh/projects/", "/about/", "/zh/about/"]) {
+		const html = await read(route);
+		assert.doesNotMatch(html, /Sample article|示例文章|hello-world|writing-guide|本站的开源源码|This bilingual technical notebook/);
 	}
 });
 
-test("Untranslated posts switch to the other Blog without inventing an alternate", async () => {
-	const html = await read("/posts/reading-notes/");
-	assert.doesNotMatch(html, /rel=alternate[^>]*hreflang|hreflang[^>]*rel=alternate/);
-	assert.ok(html.includes(`href=${base}/zh/posts/`) || html.includes(`href="${base}/zh/posts/"`));
-});
-
-test("Search has a base-aware UI and real indexes for both languages", async () => {
+test("Empty search has no indexed site chrome or unusable search UI", { skip: !empty }, async () => {
 	for (const prefix of ["", "/zh"]) {
 		const html = await read(`${prefix}/search/`);
-		assert.ok(html.includes(`${base}/pagefind/pagefind-ui.js`));
-		assert.ok(html.includes(`${base}/pagefind/pagefind-ui.css`));
-		assert.ok(html.includes('id="search"') || html.includes("id=search"));
+		assert.match(html, prefix ? /暂无文章/ : /No articles yet/);
+		assert.doesNotMatch(html, /pagefind-ui\.js/);
 	}
-	const entry = JSON.parse(
-		await readFile(new URL("../dist/pagefind/pagefind-entry.json", import.meta.url)),
-	);
-	assert.ok(entry.languages.en.page_count > 0);
-	assert.ok(entry.languages["zh-cn"].page_count > 0);
-	await access(new URL("../dist/pagefind/pagefind-ui.js", import.meta.url));
-});
-
-test("Published pages do not contain example identity or unrelated demo projects", async () => {
-	for (const route of ["/", "/zh/", "/about/", "/zh/about/", "/projects/", "/zh/projects/"]) {
-		const html = await read(route);
-		assert.doesNotMatch(
-			html,
-			/John Doe|john@example.com|github.com\/example|Example Inc|8.8k|Sample Project/,
-		);
-		assert.match(html, /akn20/);
-	}
+	const index = JSON.parse(await readFile(new URL("../dist/pagefind/pagefind-entry.json", import.meta.url), "utf8"));
+	assert.deepEqual(index.languages, {});
 });

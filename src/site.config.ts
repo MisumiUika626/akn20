@@ -12,7 +12,7 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 	description:
-		"A technical notebook on computer science, learning by building, and small reproducible experiments. Written in English and Chinese.",
+		"akn20 — a bilingual personal blog.",
 	lang: "en-US",
 	ogLocale: "en_US",
 	sortPostsByUpdatedDate: false,
