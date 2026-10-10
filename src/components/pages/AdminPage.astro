@@ -3,6 +3,7 @@ import PageLayout from "@/layouts/Base.astro";
 import { localizedPath, type Locale } from "@/i18n/config";
 import { withBase } from "@/utils/path";
 import { authOrigin } from "@/data/auth";
+import ContentEditor from "@/components/ContentEditor.astro";
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const zh = locale === "zh";
@@ -17,8 +18,9 @@ const zh = locale === "zh";
 			<p>{zh ? "正式启用后，只有作者本人能够登录、编辑和发布内容。" : "Once configured, only the owner can sign in, edit and publish content."}</p>
 			<button id="login-button" type="button" disabled={!authOrigin} aria-describedby="login-note">{zh ? "使用 GitHub 登录" : "Sign in with GitHub"}</button>
 			<button id="logout-button" type="button" hidden>{zh ? "退出登录" : "Sign out"}</button>
-			<p id="login-note" class="note">{authOrigin ? (zh ? "登录仅验证作者身份，文章编辑与发布功能尚未接入。" : "Sign-in verifies owner identity; content editing and publishing are not connected yet.") : (zh ? "登录代码已准备好，需先部署登录服务并完成 GitHub 授权配置。当前无法修改或发布网站内容。" : "Login code is ready. Deploy the authentication service and configure GitHub OAuth to activate it. Editing and publishing are currently unavailable.")}</p>
+			<p id="login-note" class="note">{zh ? "登录并授权后，可管理文章、项目、关于和网站名称。" : "Authorize access to manage articles, projects, About and the site title."}</p>
 		</div>
+		<ContentEditor locale={locale} />
 		<a class="back" href={withBase(localizedPath(locale, "/"))}>{zh ? "← 返回博客" : "← Back to the blog"}</a>
 	</section>
 </PageLayout>
@@ -66,7 +68,7 @@ const zh = locale === "zh";
 			try { sessionStorage.setItem(storageKey, token); } catch { /* Do not persist if unavailable. */ }
 			if (login) { login.hidden = true; login.disabled = true; }
 			if (logout) logout.hidden = false;
-			say(zh ? `已登录：${owner.login}（作者）` : `Signed in: ${owner.login} (owner)`);
+			say(owner.canEdit ? (zh ? `已登录：${owner.login}（作者）` : `Signed in: ${owner.login} (owner)`) : (zh ? "请退出后重新登录，授权仓库写入权限。" : "Sign out and sign in again to authorize content editing."));
 			document.dispatchEvent(new Event("akn20-session-change"));
 			return true;
 		} catch { return false; }

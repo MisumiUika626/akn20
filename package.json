@@ -10,6 +10,7 @@
 		"dev": "astro dev",
 		"start": "astro dev",
 		"build": "astro check && astro build",
+		"prebuild": "node scripts/brand-assets.mjs",
 		"postbuild": "node scripts/search-index.mjs",
 		"preview": "astro preview",
 		"test": "BASE_PATH=/akn20 pnpm build && node --test tests/*.test.mjs",
@@ -50,7 +51,8 @@
 		"schema-dts": "^1.1.5",
 		"sharp": "^0.35.3",
 		"unified": "^11.0.5",
-		"unist-util-visit": "^5.1.0"
+		"unist-util-visit": "^5.1.0",
+		"yaml": "2.8.4"
 	},
 	"devDependencies": {
 		"@astrojs/check": "^0.9.9",

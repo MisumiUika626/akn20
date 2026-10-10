@@ -4,6 +4,7 @@ import { formatLocalizedDate, formatReadingTime } from "../../i18n/format.ts";
 export type ArticleCardLocale = "en" | "zh";
 
 export interface ArticleCardInput {
+	siteTitle?: string;
 	author?: string;
 	description: string;
 	host: string;
@@ -15,6 +16,7 @@ export interface ArticleCardInput {
 }
 
 export interface ArticleCardModel {
+	siteTitle: string;
 	byline: string;
 	dateLabel: string;
 	description: string;
@@ -64,6 +66,7 @@ export function createArticleCardModel(input: ArticleCardInput): ArticleCardMode
 	].filter(Boolean);
 
 	return {
+		siteTitle: input.siteTitle ?? "akn20",
 		byline: bylineParts.join(" · "),
 		dateLabel: formatLocalizedDate(input.publishDate, input.locale, {
 			day: "numeric",
@@ -113,7 +116,7 @@ export function articleCardMarkup(
 					tw="text-xl tracking-widest uppercase"
 					style="color: #d6a06c; font-family: ${fonts.brand};"
 				>
-					akn20 /
+					${model.siteTitle} /
 				</span>
 				<span tw="text-xl ml-3 tracking-widest" style="color: #d6a06c; font-family: ${fonts.meta};">
 					${model.sectionLabel}

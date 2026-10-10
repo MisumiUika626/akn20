@@ -29,6 +29,24 @@ async function verify(token, secret, purpose) {
 	} catch { return null; }
 }
 function random() { return base64url(crypto.getRandomValues(new Uint8Array(32))); }
+async function sessionKey(secret) {
+	const hash = await crypto.subtle.digest("SHA-256", encoder.encode(`akn20-session:${secret}`));
+	return crypto.subtle.importKey("raw", hash, "AES-GCM", false, ["encrypt", "decrypt"]);
+}
+async function sealSession(value, secret) {
+	const iv = crypto.getRandomValues(new Uint8Array(12));
+	const ciphertext = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, await sessionKey(secret), encoder.encode(JSON.stringify(value)));
+	return `${base64url(iv)}.${base64url(new Uint8Array(ciphertext))}`;
+}
+async function openSession(token, secret) {
+	try {
+		const parts = token.split(".");
+		if (parts.length !== 2 || decode(parts[0]).length !== 12) return null;
+		const plain = await crypto.subtle.decrypt({ name: "AES-GCM", iv: decode(parts[0]) }, await sessionKey(secret), decode(parts[1]));
+		const value = JSON.parse(new TextDecoder().decode(plain));
+		return value.purpose === "session" && Number.isFinite(value.exp) && value.exp > Date.now() ? value : null;
+	} catch { return null; }
+}
 function response(body, status = 200, extra = {}) {
 	return new Response(body, { status, headers: {
 		"Cache-Control": "no-store", "Referrer-Policy": "no-referrer", "X-Content-Type-Options": "nosniff",
@@ -49,7 +67,7 @@ function popup(message) {
 	});
 }
 
-/** GitHub identity login only. No repository token or content write API is exposed. */
+/** Owner-only content API; GitHub tokens remain inside encrypted server sessions. */
 export async function handleRequest(request, env, fetcher = fetch) {
 	const url = new URL(request.url);
 	if (url.pathname === "/health") return response(JSON.stringify({ service: "akn20-auth" }), 200, { "Content-Type": "application/json" });
@@ -64,16 +82,21 @@ export async function handleRequest(request, env, fetcher = fetch) {
 	} catch { return response("Invalid authentication configuration.", 503); }
 	if (url.origin !== publicOrigin) return response("Invalid authentication host.", 400);
 
-	if (url.pathname === "/session") {
+	if (url.pathname === "/session" || url.pathname.startsWith("/content/")) {
 		if (request.headers.get("Origin") !== EDITOR_ORIGIN) return response("Forbidden origin.", 403);
-		if (request.method === "OPTIONS") return response(null, 204, { ...cors(), "Access-Control-Allow-Methods": "GET", "Access-Control-Allow-Headers": "Authorization" });
-		if (request.method !== "GET") return response("Method not allowed.", 405, cors());
+		if (request.method === "OPTIONS") return response(null, 204, { ...cors(), "Access-Control-Allow-Methods": "GET, PUT, DELETE", "Access-Control-Allow-Headers": "Authorization, Content-Type" });
+		if (url.pathname === "/session" && request.method !== "GET") return response("Method not allowed.", 405, cors());
 		const token = request.headers.get("Authorization")?.replace(/^Bearer /, "") ?? "";
-		const session = await verify(token, env.SESSION_SECRET, "session");
+		const session = await openSession(token, env.SESSION_SECRET);
 		if (!session || session.uid !== OWNER_ID || session.aud !== EDITOR_ORIGIN || session.iss !== publicOrigin) {
 			return response("Unauthorized.", 401, cors());
 		}
-		return response(JSON.stringify({ id: OWNER_ID, login: session.login, expiresAt: session.exp }), 200, { ...cors(), "Content-Type": "application/json" });
+		if (url.pathname.startsWith("/content/")) {
+			try {
+				return response(JSON.stringify(await handleContent(request, session, fetcher)), 200, { ...cors(), "Content-Type": "application/json" });
+			} catch (error) { return response(error.status ? error.message : "Content request failed.", error.status ?? 500, cors()); }
+		}
+		return response(JSON.stringify({ id: OWNER_ID, login: session.login, expiresAt: session.exp, canEdit: session.canEdit === true }), 200, { ...cors(), "Content-Type": "application/json" });
 	}
 	if (request.method !== "GET") return response("Method not allowed.", 405);
 	if (url.pathname === "/auth") {
@@ -85,8 +108,7 @@ export async function handleRequest(request, env, fetcher = fetch) {
 		target.search = new URLSearchParams({
 			client_id: env.GITHUB_CLIENT_ID, redirect_uri: `${publicOrigin}/callback`,
 			state, code_challenge: challenge, code_challenge_method: "S256",
-			// Identity only; repository write access is a separate future feature.
-			scope: "read:user", login: "MisumiUika626", allow_signup: "false",
+			scope: "read:user public_repo", login: "MisumiUika626", allow_signup: "false",
 		}).toString();
 		return response(null, 302, { Location: target.href, "Set-Cookie": cookie(pending) });
 	}
@@ -112,7 +134,8 @@ export async function handleRequest(request, env, fetcher = fetch) {
 			const user = await identity.json();
 			if (user.id !== OWNER_ID) return popup({ type: "akn20-auth", error: "forbidden" });
 			const expiresAt = Date.now() + 3_600_000;
-			const token = await sign({ purpose: "session", uid: OWNER_ID, login: user.login, exp: expiresAt, aud: EDITOR_ORIGIN, iss: publicOrigin }, env.SESSION_SECRET);
+			const scopes = (grant.scope ?? "").split(/[ ,]+/);
+			const token = await sealSession({ purpose: "session", uid: OWNER_ID, login: user.login, exp: expiresAt, aud: EDITOR_ORIGIN, iss: publicOrigin, github: grant.access_token, canEdit: scopes.includes("public_repo") || scopes.includes("repo") }, env.SESSION_SECRET);
 			return popup({ type: "akn20-auth", token, expiresAt });
 		} catch { return popup({ type: "akn20-auth", error: "unavailable" }); }
 	}
@@ -122,3 +145,4 @@ export async function handleRequest(request, env, fetcher = fetch) {
 export default {
 	fetch(request, env) { return handleRequest(request, env); },
 };
+import { handleContent } from "./content.mjs";

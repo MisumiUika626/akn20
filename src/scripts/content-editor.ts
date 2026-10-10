@@ -1,0 +1,126 @@
+import { parse } from "yaml";
+import { authOrigin } from "@/data/auth";
+
+export function initContentEditor() {
+	const root = document.getElementById("content-editor");
+	if (!root) return;
+	const status = document.getElementById("editor-status");
+	const say = (value: string) => { if (status) status.textContent = value; };
+	const form = document.getElementById("article-form") as HTMLFormElement;
+	const list = document.getElementById("article-list") as HTMLSelectElement;
+	const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+	let articlePath = "", articleSha: string | null = null;
+	let projectsSha: string | null = null, aboutSha: string | null = null, titleSha: string | null = null;
+	let initialized = false;
+	let busy = false;
+	const buttonDelete = document.getElementById("delete-article") as HTMLButtonElement;
+	function split(content: string) {
+		const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
+		return { data: match ? parse(match[1]) : {}, body: match ? content.slice(match[0].length).replace(/^\s*\n/, "") : content };
+	}
+	async function api(path: string, method = "GET", data?: unknown) {
+		const token = sessionStorage.getItem("akn20-owner-session");
+		if (!token) throw Error("请重新登录 / Please sign in again");
+		const res = await fetch(`${authOrigin}/content/${path}`, { method, cache: "no-store", headers: { Authorization: `Bearer ${token}`, ...(data !== undefined && { "Content-Type": "application/json" }) }, ...(data !== undefined && { body: JSON.stringify(data) }) });
+		if (!res.ok) throw Error(await res.text());
+		return res.json();
+	}
+	async function run(action: () => Promise<void>, save = false) {
+		if (busy) return;
+		busy = true;
+		root?.querySelectorAll<HTMLButtonElement>("button").forEach((button) => { button.disabled = true; });
+		root?.querySelectorAll<HTMLInputElement>("input, textarea, select").forEach((field) => { field.disabled = true; });
+		say(save ? "正在保存到 GitHub…" : "正在加载…");
+		try { await action(); say(save ? "已保存。网站正在自动更新，可稍后刷新博客查看。" : "已加载。"); }
+		catch (error) { say(error instanceof Error ? error.message : "操作失败，请重试。"); }
+		finally { busy = false; root?.querySelectorAll<HTMLButtonElement>("button").forEach((button) => { button.disabled = false; }); root?.querySelectorAll<HTMLInputElement>("input, textarea, select").forEach((field) => { field.disabled = false; }); input("slug").disabled = !!articlePath; input("locale").disabled = !!articlePath; buttonDelete.disabled = !articlePath; }
+	}
+	function newArticle() {
+		form.reset(); articlePath = ""; articleSha = null; list.value = "";
+		input("slug").disabled = false; input("locale").disabled = false;
+		input("locale").value = root?.dataset.locale ?? "zh";
+		input("publishDate").value = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0,10);
+		input("category").value = input("locale").value === "zh" ? "笔记" : "Notes";
+		buttonDelete.disabled = true;
+	}
+	async function refreshArticles() {
+		const result = await api("posts");
+		list.replaceChildren(new Option("新建文章 / New article", ""));
+		for (const file of result.files) list.add(new Option(file.path.startsWith("src/content/post/zh/") ? `中文 · ${file.name}` : `EN · ${file.name}`, file.path));
+		list.value = articlePath;
+	}
+	list.addEventListener("change", () => { void run(async () => {
+		if (!list.value) { newArticle(); return; }
+		const file = await api(`post?path=${encodeURIComponent(list.value)}`);
+		const { data, body } = split(file.content);
+		articlePath = list.value; articleSha = file.sha;
+		for (const name of ["title","description","category","translationKey"]) input(name).value = data[name] ?? "";
+		input("publishDate").value = String(data.publishDate ?? "").slice(0,10);
+		input("tags").value = (data.tags ?? []).join(", "); input("draft").checked = data.draft === true;
+		input("body").value = body; input("slug").value = articlePath.split("/").at(-1)?.replace(/\.md$/, "") ?? "";
+		input("locale").value = articlePath.includes("/zh/") ? "zh" : "en";
+		input("slug").disabled = true; input("locale").disabled = true;
+	}); });
+	form.addEventListener("submit", (event) => { event.preventDefault(); void run(async () => {
+		const path = articlePath || `src/content/post/${input("locale").value === "zh" ? "zh/" : ""}${input("slug").value}.md`;
+		const article = { title: input("title").value, description: input("description").value, publishDate: input("publishDate").value, category: input("category").value, tags: input("tags").value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean), translationKey: input("translationKey").value, draft: input("draft").checked, body: input("body").value };
+		const saved = await api("post", "PUT", { path, sha: articleSha, article });
+		articlePath = path; articleSha = saved.sha;
+		input("slug").disabled = true; input("locale").disabled = true;
+		await refreshArticles();
+	}, true); });
+	document.getElementById("new-article")?.addEventListener("click", () => { if (!formDirty() || confirm("放弃当前未保存的文章修改？")) newArticle(); });
+	function formDirty() { return !!input("title").value || !!input("body").value; }
+	document.getElementById("refresh-articles")?.addEventListener("click", () => { void run(refreshArticles); });
+	buttonDelete.addEventListener("click", () => { if (articlePath && confirm("确定删除这篇文章？删除会同步到 GitHub 和网站。")) void run(async () => { await api("post", "DELETE", { path: articlePath, sha: articleSha }); newArticle(); await refreshArticles(); }, true); });
+	const cards = document.getElementById("project-items") as HTMLElement;
+	function addProject(value: Record<string, unknown> = {}) {
+		const card = document.createElement("div"); card.className = "project-card";
+		const desc = (value.desc ?? {}) as Record<string, string>;
+		const fields = [["name","项目名称",value.name],["href","项目链接（https://…）",value.href],["stack","技术栈",value.stack],["en","English description",desc.en],["zh","中文简介",desc.zh],["priority","排序优先级",value.priority ?? 0],["badge","状态（可选）",(value.badge as {label?:string})?.label]];
+		for (const [key,label,initial] of fields) {
+			const row = document.createElement("label"); row.textContent = String(label);
+			const field = document.createElement("input"); field.dataset.field = String(key); field.value = String(initial ?? "");
+			if (key === "priority") field.type = "number";
+			row.append(field); card.append(row);
+		}
+		const remove = document.createElement("button"); remove.type = "button"; remove.textContent = "移除项目";
+		remove.addEventListener("click", () => { if (confirm("从当前列表移除此项目？点击保存后才会生效。")) card.remove(); });
+		card.append(remove); cards.append(card);
+	}
+	document.getElementById("add-project")?.addEventListener("click", () => addProject());
+	document.getElementById("save-projects")?.addEventListener("click", () => { void run(async () => {
+		const value = [...cards.children].map((card) => {
+			const get = (key: string) => (card.querySelector(`[data-field="${key}"]`) as HTMLInputElement).value;
+			return { name: get("name"), href: get("href"), stack: get("stack"), desc: { en: get("en"), zh: get("zh") }, priority: Number(get("priority")), ...(get("badge") && { badge: { label: get("badge") } }) };
+		});
+		const saved = await api("projects", "PUT", { sha: projectsSha, value }); projectsSha = saved.sha;
+	}, true); });
+	const aboutLocale = document.getElementById("about-locale") as HTMLSelectElement;
+	const about = document.getElementById("about-body") as HTMLTextAreaElement;
+	async function loadAbout() { const file = await api(`about?locale=${aboutLocale.value}`); aboutSha = file.sha; about.value = split(file.content).body; }
+	aboutLocale.addEventListener("change", () => { void run(loadAbout); });
+	document.getElementById("save-about")?.addEventListener("click", () => { void run(async () => { const saved = await api("about", "PUT", { locale: aboutLocale.value, body: about.value, sha: aboutSha }); aboutSha = saved.sha; }, true); });
+	const title = document.getElementById("site-title") as HTMLInputElement;
+	document.getElementById("save-settings")?.addEventListener("click", () => { void run(async () => { const saved = await api("settings", "PUT", { value: { title: title.value }, sha: titleSha }); titleSha = saved.sha; }, true); });
+	root.querySelectorAll<HTMLButtonElement>("[data-tab]").forEach((button) => { button.addEventListener("click", () => { root.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => { panel.hidden = panel.dataset.panel !== button.dataset.tab; }); }); });
+	const updateEditor = () => {
+		if (!sessionStorage.getItem("akn20-owner-session")) { root.hidden = true; initialized = false; return; }
+		void run(async () => {
+			const token = sessionStorage.getItem("akn20-owner-session");
+			const response = await fetch(`${authOrigin}/session`, { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" });
+			if (!response.ok) return;
+			const owner = await response.json();
+			if (sessionStorage.getItem("akn20-owner-session") !== token) return;
+			if (owner.id !== 245514160 || !owner.canEdit) { root.hidden = true; say("请退出后重新登录，授权文章编辑权限。"); return; }
+			root.hidden = false;
+			if (initialized) return;
+			await refreshArticles();
+			const projects = await api("projects"); projectsSha = projects.sha; cards.replaceChildren(); projects.value.forEach(addProject);
+			const settings = await api("settings"); titleSha = settings.sha; title.value = settings.value.title;
+			aboutLocale.value = root.dataset.locale ?? "zh"; await loadAbout(); newArticle(); initialized = true;
+		});
+	};
+	document.addEventListener("akn20-session-change", updateEditor);
+	updateEditor();
+}

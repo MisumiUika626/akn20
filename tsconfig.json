@@ -34,6 +34,9 @@
     }
   },
   "exclude": [
+    "work",
+    ".local-tools",
+    ".local-cache",
     "node_modules",
     "**/node_modules/*",
     ".vscode",

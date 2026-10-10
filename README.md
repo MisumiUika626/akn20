@@ -83,16 +83,18 @@ Alternatively, rapidly click or tap the header's **akn20** wordmark three times 
 open the GitHub sign-in popup. Consecutive clicks must be within 450ms of each other;
 ordinary single-click navigation waits that briefly. Keyboard/modifier link actions
 keep their usual behavior. If popups are blocked, the gesture opens the admin page.
-The entry page has GitHub sign-in and tab-session handling. The Worker in `auth/`
-verifies the owner identity, using OAuth state validation and PKCE; deployment setup
-is described in [auth/README.md](auth/README.md). Login remains disabled while the
-public service URL is empty. Content writing/publishing is a separate pending feature.
+After owner sign-in, the editor manages Markdown articles, projects, localized About
+and the site's display title. Saving creates a GitHub commit and automatically deploys
+the website. Reauthorize GitHub editing access after upgrading from identity-only login.
+The Worker uses PKCE, owner-ID verification, encrypted sessions and strict content path
+limits; implementation details are in [auth/README.md](auth/README.md).
 
 | File | Purpose |
 | --- | --- |
 | `src/site.config.ts` | Site title, author, optional contact links and integrations |
 | `src/i18n/config.ts` | English and Chinese interface text |
-| `src/data/showcase.ts` | Projects, localized descriptions, status badge and priority |
+| `src/data/projects.json` | Projects, localized descriptions, status badge and priority |
+| `src/data/site-settings.json` | Editable site display title |
 | `src/content/page/about.md` | English About |
 | `src/content/page/zh/about.md` | 中文介绍 |
 | `src/styles/global.css` | Shared palette and layout |

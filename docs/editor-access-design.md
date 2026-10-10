@@ -2,7 +2,8 @@
 
 Status: owner-only GitHub identity login implemented. The authentication service
 is deployed at `https://akn20-auth.akn20.workers.dev`. The blog is connected to it.
-Content editing and publication are a separate pending feature. A real owner login
+Articles, projects, About and display-title editing are implemented through a
+fixed-repository content API. A real owner login with repository-write permission
 must be completed in the published browser page before claiming end-to-end validation.
 
 ## Confirmed requirements
@@ -48,9 +49,11 @@ Cloudflare was authorized by the owner and the account email was verified. The
 Worker is deployed, its session secret generated server-side, and the GitHub OAuth
 application configured. Its public client ID is `Ov23lirFdsFAYE72U84T`; client and
 session secrets are Cloudflare encrypted bindings. No secret values belong in Git.
-The current login requests identity access (`read:user`), not repository-write scope,
-and returns an app session rather than a GitHub token to the frontend. It does not
-yet expose content-management operations.
+The current login requests `read:user public_repo`. It seals the GitHub token inside
+an AES-GCM encrypted session; the frontend never receives a readable GitHub token.
+Every content request validates the session and requires the write grant. API paths
+allow only managed Markdown articles, localized About and the projects/title JSON
+files in `MisumiUika626/akn20` on `main`. SHA revisions reject conflicting updates.
 
 Verification: 36 automated tests passed, including mocked OAuth/owner checks,
 bad/expired state, forged/expired sessions and denied origins. Browser tests with

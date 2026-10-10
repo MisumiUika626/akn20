@@ -1,5 +1,6 @@
 import type { SiteConfig } from "@/types";
 import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
+import settings from "./data/site-settings.json";
 
 export const siteConfig: SiteConfig = {
 	author: "MisumiUika626",
@@ -12,11 +13,11 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 	description:
-		"akn20 — a bilingual personal blog.",
+		`${settings.title} — a bilingual personal blog.`,
 	lang: "en-US",
 	ogLocale: "en_US",
 	sortPostsByUpdatedDate: false,
-	title: "akn20",
+	title: settings.title,
 	hideThemeCredit: false,
 	profile: {
 		name: "MisumiUika626",

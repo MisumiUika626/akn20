@@ -108,6 +108,7 @@ export async function getStaticPaths() {
 					locale: postLocaleFromId(post.id),
 					pubDate: (post.data.updatedDate ?? post.data.publishDate).toISOString(),
 					readingTime,
+					siteTitle: siteConfig.title,
 					tags: post.data.tags ?? [],
 					title: post.data.title,
 				},

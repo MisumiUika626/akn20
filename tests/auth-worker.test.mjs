@@ -9,7 +9,7 @@ async function begin() {
 	const res = await handleRequest(new Request(`${origin}/auth`), env);
 	return { res, target: new URL(res.headers.get("Location")), cookie: res.headers.get("Set-Cookie").split(";")[0] };
 }
-async function callback(id = 245514160) {
+async function callback(id = 245514160, scope = "read:user,public_repo") {
 	const auth = await begin();
 	let calls = 0;
 	const fetcher = async (url, options) => {
@@ -20,7 +20,7 @@ async function callback(id = 245514160) {
 			const verifier = options.body.get("code_verifier");
 			const challenge = Buffer.from(await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier))).toString("base64url");
 			assert.equal(challenge, auth.target.searchParams.get("code_challenge"));
-			return Response.json({ access_token: "github-token-must-never-reach-client" });
+			return Response.json({ access_token: "github-token-must-never-reach-client", scope });
 		}
 		assert.equal(url, "https://api.github.com/user");
 		return Response.json({ id, login: "MisumiUika626" });
@@ -40,7 +40,7 @@ test("OAuth uses secure state cookie, PKCE, a fixed callback and identity-only s
 	const { res, target } = await begin();
 	assert.equal(res.status, 302);
 	assert.equal(target.origin, "https://github.com");
-	assert.equal(target.searchParams.get("scope"), "read:user");
+	assert.equal(target.searchParams.get("scope"), "read:user public_repo");
 	assert.equal(target.searchParams.get("code_challenge_method"), "S256");
 	assert.equal(target.searchParams.get("code_challenge").length, 43);
 	assert.match(res.headers.get("Set-Cookie"), /HttpOnly; Secure; SameSite=Lax; Max-Age=600/);
@@ -101,4 +101,68 @@ test("expired OAuth cookies cannot be exchanged", async () => {
 		const res = await handleRequest(new Request(`${origin}/callback?code=test&state=${auth.target.searchParams.get("state")}`, { headers: { Cookie: auth.cookie } }), env);
 		assert.equal(res.status, 400);
 	} finally { Date.now = now; }
+});
+
+test("editing requires a fresh repository-write grant", async () => {
+	const { message } = await callback(245514160, "read:user");
+	let called = false;
+	const result = await handleRequest(new Request(`${origin}/content/settings`, { headers: { Origin: editor, Authorization: `Bearer ${message.token}` } }), env, () => { called = true; });
+	assert.equal(result.status, 403);
+	assert.equal(called, false);
+});
+
+test("content API rejects path traversal and workflow edits before GitHub is called", async () => {
+	const { message } = await callback();
+	for (const path of [".github/workflows/deploy.yml", "src/content/post/../../site.config.ts", "src/content/post/zh/../wrong.md", "src/content/post/a.js", "src/content/post/%2e%2e/secret.md"]) {
+		let called = false;
+		const result = await handleRequest(new Request(`${origin}/content/post`, { method: "PUT", headers: { Origin: editor, Authorization: `Bearer ${message.token}` }, body: JSON.stringify({ path, sha: null }) }), env, () => { called = true; });
+		assert.equal(result.status, 400);
+		assert.equal(called, false);
+	}
+});
+
+test("article creation writes UTF-8 Markdown only to the fixed main-branch content path", async () => {
+	const { message } = await callback();
+	let payload;
+	const result = await handleRequest(new Request(`${origin}/content/post`, { method: "PUT", headers: { Origin: editor, Authorization: `Bearer ${message.token}` }, body: JSON.stringify({ path: "src/content/post/zh/test-note.md", sha: null, repo: "attacker/repo", article: { title: "标题", description: "这是用于验证中文文章写入的摘要。", category: "笔记", publishDate: "2026-10-10", tags: ["测试"], body: "正文内容", draft: true } }) }), env, async (url, options) => {
+		assert.equal(url, "https://api.github.com/repos/MisumiUika626/akn20/contents/src/content/post/zh/test-note.md");
+		assert.equal(options.method, "PUT");
+		assert.equal(options.headers.Authorization, "Bearer github-token-must-never-reach-client");
+		payload = JSON.parse(options.body);
+		return Response.json({ content: { sha: "a".repeat(40) }, commit: { sha: "b".repeat(40) } });
+	});
+	assert.equal(result.status, 200);
+	assert.equal(payload.branch, "main");
+	const file = Buffer.from(payload.content, "base64").toString("utf8");
+	assert.match(file, /title: "标题"/);
+	assert.match(file, /draft: true/);
+	assert.match(file, /正文内容/);
+});
+
+test("invalid content and optimistic-concurrency conflicts do not overwrite files", async () => {
+	const { message } = await callback();
+	const headers = { Origin: editor, Authorization: `Bearer ${message.token}` };
+	assert.equal((await handleRequest(new Request(`${origin}/content/settings`, { method: "PUT", headers, body: JSON.stringify({ sha: "a".repeat(40), value: { title: "" } }) }), env)).status, 400);
+	const conflict = await handleRequest(new Request(`${origin}/content/settings`, { method: "PUT", headers, body: JSON.stringify({ sha: "a".repeat(40), value: { title: "New name" } }) }), env, async () => Response.json({}, { status: 409 }));
+	assert.equal(conflict.status, 409);
+});
+
+test("project links must be web URLs and deleting settings is forbidden", async () => {
+	const { message } = await callback();
+	const headers = { Origin: editor, Authorization: `Bearer ${message.token}` };
+	const result = await handleRequest(new Request(`${origin}/content/projects`, { method: "PUT", headers, body: JSON.stringify({ sha: null, value: [{ name: "bad", href: "javascript:alert(1)", stack: "", desc: { en: "", zh: "" }, priority: 0 }] }) }), env);
+	assert.equal(result.status, 400);
+	assert.equal((await handleRequest(new Request(`${origin}/content/settings`, { method: "DELETE", headers, body: JSON.stringify({ sha: "a".repeat(40) }) }), env)).status, 403);
+});
+
+test("duplicate published translation keys are rejected before committing", async () => {
+	const { message } = await callback();
+	let writes = 0;
+	const result = await handleRequest(new Request(`${origin}/content/post`, { method: "PUT", headers: { Origin: editor, Authorization: `Bearer ${message.token}` }, body: JSON.stringify({ path: "src/content/post/zh/new.md", sha: null, article: { title: "New", description: "A sufficiently long description.", publishDate: "2026-10-10", category: "Notes", tags: [], body: "Body", translationKey: "existing-key" } }) }), env, async (url, options) => {
+		if (options.method) { writes++; return Response.json({}); }
+		if (url.includes("existing.md")) return Response.json({ sha: "a".repeat(40), content: Buffer.from('---\ntranslationKey: "existing-key"\ndraft: false\n---\n').toString("base64") });
+		return Response.json([{ type: "file", name: "existing.md", path: "src/content/post/zh/existing.md" }]);
+	});
+	assert.equal(result.status, 400);
+	assert.equal(writes, 0);
 });

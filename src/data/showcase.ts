@@ -1,4 +1,5 @@
 import type { Locale } from "@/i18n/config";
+import projects from "./projects.json";
 
 export interface ShowcaseItem {
 	name: string;
@@ -15,7 +16,7 @@ export interface ShowcaseBadge {
 	label: string;
 }
 
-export const showcase: ShowcaseItem[] = [];
+export const showcase: ShowcaseItem[] = projects as ShowcaseItem[];
 
 export function getShowcaseByPriority(): ShowcaseItem[] {
 	return [...showcase].sort((a, b) => b.priority - a.priority);

@@ -21,7 +21,7 @@ export const messages = {
 		categories: "Categories",
 		search: "Search",
 		homeDescription:
-			"akn20 — a bilingual personal blog.",
+			`${settings.title} — a bilingual personal blog.`,
 		latest: "Latest",
 		link: "Link",
 		morePosts: "More posts",
@@ -59,7 +59,7 @@ export const messages = {
 		categories: "分类",
 		search: "搜索",
 		homeDescription:
-			"akn20 — 中英文个人博客。",
+			`${settings.title} — 中英文个人博客。`,
 		latest: "最新",
 		link: "链接",
 		morePosts: "更多文章",
@@ -112,3 +112,4 @@ export function postSlugFromId(id: string): string {
 	const prefix = id.split("/", 1)[0];
 	return locales.includes(prefix as Locale) ? id.slice(prefix.length + 1) : id;
 }
+import settings from "../data/site-settings.json" with { type: "json" };
