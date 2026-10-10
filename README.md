@@ -40,6 +40,8 @@ BASE_PATH=/akn20 pnpm preview
 ## V1 features
 
 - Minimal academic/editorial home, responsive layout, light and dark themes.
+- Layout CSS travels inside each HTML document so cached Pages HTML does not depend
+  on a stylesheet hash removed by a newer deployment. Locale font styles remain external.
 - English `/` and Chinese `/zh/`, including navigation, About and Projects.
 - Blog `/posts/`, category and tag archives, localized Pagefind full-text search.
 - Markdown and MDX, code highlighting, KaTeX, RSS, sitemap and article cards.

@@ -44,7 +44,8 @@ export default defineConfig({
 	},
 	compressHTML: true,
 	build: {
-		inlineStylesheets: "never",
+		// Keep layout CSS with cached HTML; Pages removes old hashed CSS on deploy.
+		inlineStylesheets: "always",
 	},
 	integrations: [
 		partytown({

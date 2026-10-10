@@ -14,6 +14,12 @@ async function readBuiltAsset(href) {
 	return readFile(new URL(`../dist${path}`, import.meta.url));
 }
 
+async function readSharedStyles(html) {
+	const shared = linkAttributes(html).find(({ href, rel }) => rel === "stylesheet" && /\/_astro\/Base\.[^/]+\.css$/u.test(href));
+	if (shared) return (await readBuiltAsset(shared.href)).toString();
+	return [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/g)].map(([, css]) => css).join("\n");
+}
+
 function elementAttributes(html, tagName) {
 	return [...html.matchAll(new RegExp(`<${tagName}\\b([^>]*)>`, "gi"))].map(([, source]) =>
 		Object.fromEntries(
@@ -155,18 +161,18 @@ test("The shared and English font stylesheets stay within their performance budg
 	const chineseLinks = linkAttributes(await readPage("/zh/")).filter(
 		({ rel }) => rel === "stylesheet",
 	);
-	const shared = englishLinks.find(({ href }) => /\/_astro\/Base\.[^/]+\.css$/u.test(href));
+	const sharedStyles = await readSharedStyles(await readPage("/"));
 	const englishFonts = englishLinks.find(({ "data-font-locale": locale }) => locale === "en");
 	const chineseFonts = chineseLinks.find(({ "data-font-locale": locale }) => locale === "zh");
 
-	assert.ok(shared, "missing shared stylesheet");
+	assert.ok(sharedStyles.includes("--theme-bg:"), "missing shared theme styles");
 	assert.ok(englishFonts, "missing English font stylesheet");
 	assert.ok(chineseFonts, "missing Chinese font stylesheet");
 	const englishFontCss = (await readBuiltAsset(englishFonts.href)).toString();
 	const chineseFontCss = (await readBuiltAsset(chineseFonts.href)).toString();
 	const weights = (css) => [...new Set(css.match(/font-weight:\d+/gu) ?? [])].sort();
 
-	assert.ok((await readBuiltAsset(shared.href)).byteLength < 100 * 1024);
+	assert.ok(Buffer.byteLength(sharedStyles) < 100 * 1024);
 	assert.ok(Buffer.byteLength(englishFontCss) < 8 * 1024);
 	assert.ok(Buffer.byteLength(chineseFontCss) < 750 * 1024);
 	assert.match(englishFontCss, /font-family:Maple Mono[;}]/u);
@@ -182,13 +188,7 @@ test("The shared and English font stylesheets stay within their performance budg
 });
 
 test("Production CSS preserves responsive layout breakpoints", async () => {
-	const englishLinks = linkAttributes(await readPage("/")).filter(
-		({ rel }) => rel === "stylesheet",
-	);
-	const shared = englishLinks.find(({ href }) => /\/_astro\/Base\.[^/]+\.css$/u.test(href));
-
-	assert.ok(shared, "missing shared stylesheet");
-	const sharedStyles = (await readBuiltAsset(shared.href)).toString();
+	const sharedStyles = await readSharedStyles(await readPage("/"));
 	assert.match(sharedStyles, /@media\s*\((?:max-width:\s*720px|width<=720px)\)/u);
 	assert.match(sharedStyles, /@media\s*\((?:max-width:\s*420px|width<=420px)\)/u);
 });
