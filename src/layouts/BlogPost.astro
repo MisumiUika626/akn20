@@ -1,13 +1,13 @@
 ---
 import { Image } from "astro:assets";
-import { type CollectionEntry, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
 
 import ShareButtons from "@/components/blog/ShareButtons.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
 import { getPostAlternates, getPostSlug, getPostsForLocale, sortMDByDate } from "@/data/post";
 import { localizedPath, messages, postLocaleFromId } from "@/i18n/config";
 import { siteConfig } from "@/site-config";
-import { formatBylineDate, formatEyebrowDate, formatReadingTime } from "@/utils/date";
+import { formatBylineDate } from "@/utils/date";
 import { absoluteUrl, withBase } from "@/utils/path";
 import "katex/dist/katex.min.css";
 
@@ -33,23 +33,13 @@ const {
 const slug = getPostSlug(post);
 const socialImage = ogImage ?? `/og-image/${post.id}.png`;
 const articleDate = updatedDate?.toISOString() ?? publishDate.toISOString();
-const { remarkPluginFrontmatter } = await render(post);
-
 const authorName = siteConfig.profile?.name ?? siteConfig.author;
 const comments = siteConfig.comments;
 const postUrl = absoluteUrl(localizedPath(locale, `/posts/${slug}/`), Astro.site);
 const socialImageAbsolute = absoluteUrl(socialImage, Astro.site);
 
-// "Posts · Month YYYY"
-const eyebrowDate = formatEyebrowDate(publishDate, locale);
-
 // "2 May 2026"
 const bylineDate = formatBylineDate(publishDate, locale);
-
-// Prefer remark plugin's value; fall back to "".
-const readingTime: string =
-	(remarkPluginFrontmatter as { minutesRead?: string })?.minutesRead ?? "";
-const localizedReadingTime = formatReadingTime(readingTime, locale);
 const giscusLang = locale === "zh" ? "zh-CN" : "en";
 
 // Custom giscus themes only in prod: the giscus.app iframe can't fetch CSS from localhost / private IPs.
@@ -84,21 +74,12 @@ const giscusThemes = import.meta.env.PROD
 	<div class="post-shell">
 		<div class="post-main" data-pagefind-body>
 			<div id="blog-hero" class="post-header">
-				<div class="post-eyebrow">
-					{t.posts} <span class="sep">·</span> {eyebrowDate}
-				</div>
 				{draft && <span class="draft-flag">({t.draft})</span>}
 				<h1 class="post-title">{title}</h1>
 				<p class="post-category">
 					<a data-pagefind-filter={`${t.categories}:${post.data.category}`} href={withBase(localizedPath(locale, `/categories/${encodeURIComponent(post.data.category)}/`))}>{t.categories}: {post.data.category}</a>
 				</p>
-				<p class="byline">
-					{authorName && <>{t.by} {authorName}<span class="sep">·</span></>}{bylineDate}{localizedReadingTime && (
-						<>
-							<span class="sep">·</span>{localizedReadingTime}
-						</>
-					)}
-				</p>
+				<p class="byline">{bylineDate}</p>
 				{!!tags?.length && (
 					<div class="post-tags">
 						{tags.map((tag, i) => (
@@ -212,22 +193,6 @@ const giscusThemes = import.meta.env.PROD
 		border: 1px solid var(--hairline);
 		border-radius: 4px;
 		background: var(--surface-raised);
-	}
-
-	.post-eyebrow {
-		font-family: var(--font-mono);
-		font-size: 11.5px;
-		font-weight: 500;
-		letter-spacing: 0.14em;
-		text-transform: uppercase;
-		color: hsl(var(--theme-text) / 0.55);
-		margin-bottom: 22px;
-		font-variant-numeric: tabular-nums;
-		font-feature-settings: "tnum";
-	}
-	.post-eyebrow .sep {
-		color: var(--faint);
-		margin: 0 8px;
 	}
 
 	.draft-flag {
@@ -444,8 +409,6 @@ const giscusThemes = import.meta.env.PROD
 		.rule { margin-bottom: 32px; }
 	}
 	@media (max-width: 420px) {
-		.post-eyebrow { font-size: 11px; margin-bottom: 18px; }
-		.post-eyebrow .sep { margin: 0 6px; }
 		.post-title { font-size: var(--type-display-size); }
 		.byline { font-size: 14.5px; margin-bottom: 24px; }
 		.rule { margin-bottom: 26px; }
@@ -523,18 +486,6 @@ const giscusThemes = import.meta.env.PROD
 		word-wrap: break-word;
 		overflow-wrap: anywhere;
 	}
-	.post-article > p:first-of-type::first-letter {
-		font-family: var(--font-serif);
-		font-style: italic;
-		font-weight: 500;
-		color: hsl(var(--theme-accent));
-		float: left;
-		font-size: 3.6em;
-		line-height: 0.92;
-		padding: 4px 10px 0 0;
-		margin-top: 4px;
-	}
-
 	@media (max-width: 420px) {
 		.aside {
 			margin: 24px 0;
@@ -724,10 +675,6 @@ const giscusThemes = import.meta.env.PROD
 	.post-article blockquote p:last-child {
 		margin-bottom: 0;
 	}
-	.post-article blockquote p:first-of-type::first-letter {
-		all: unset;
-	}
-
 	/* Predictable sizing prevents CLS */
 	.post-article figure {
 		margin: 36px 0;

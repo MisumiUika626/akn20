@@ -38,3 +38,10 @@ test("Empty search has no indexed site chrome or unusable search UI", { skip: !e
 	const index = JSON.parse(await readFile(new URL("../dist/pagefind/pagefind-entry.json", import.meta.url), "utf8"));
 	assert.deepEqual(index.languages, {});
 });
+
+test("Published article keeps only useful metadata and no drop cap", async () => {
+	const layout = await readFile(new URL("../src/layouts/BlogPost.astro", import.meta.url), "utf8");
+	assert.doesNotMatch(layout, /post-eyebrow|formatReadingTime|localizedReadingTime/);
+	assert.doesNotMatch(layout, /first-of-type::first-letter/);
+	assert.match(layout, /<p class="byline">\{bylineDate\}<\/p>/);
+});
