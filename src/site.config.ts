@@ -57,6 +57,10 @@ export const menuLinks: { path: string; title: string }[] = [
 		path: "/search/",
 		title: "Search",
 	},
+	{
+		path: "/admin/",
+		title: "Edit",
+	},
 ];
 
 export const expressiveCodeOptions: AstroExpressiveCodeOptions = {

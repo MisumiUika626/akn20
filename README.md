@@ -75,6 +75,11 @@ translationKey: my-note
 
 ## Personalization / 个性化
 
+The header's **Edit / 编辑** entry opens `/admin/` (Chinese: `/zh/admin/`).
+The entry page is live, but authentication is not configured and its login control
+is disabled. It currently provides no write or publish operation. Connect the
+owner-only authentication service before enabling an actual editor.
+
 | File | Purpose |
 | --- | --- |
 | `src/site.config.ts` | Site title, author, optional contact links and integrations |

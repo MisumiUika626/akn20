@@ -68,7 +68,7 @@ const goatcounter = analytics?.goatcounterUrl;
 
 <meta content={siteTitle} name="title"/>
 <meta content={description} name="description"/>
-{isNotFound && <meta name="robots" content="noindex" />}
+{(isNotFound || /\/admin\/?$/.test(Astro.url.pathname)) && <meta name="robots" content="noindex" />}
 <meta content={siteConfig.author} name="author"/>
 
 {locale === "en" && <link rel="preload" as="font" type="font/woff2" href={newsreaderLatin} crossorigin />}

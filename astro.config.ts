@@ -67,6 +67,8 @@ export default defineConfig({
 				const basePrefix = BASE_PATH.replace(/\/+$/, "");
 				return ![
 					"/404/",
+					"/admin/",
+					"/zh/admin/",
 					"/posts/designing-a-visual-system/",
 					"/posts/preparing-for-multilingual-content/",
 					"/showcase/",

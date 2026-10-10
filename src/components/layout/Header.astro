@@ -13,7 +13,7 @@ const { locale, switchPath } = Astro.props;
 const t = messages[locale];
 const url = new URL(Astro.request.url);
 const wordmark = siteConfig.title;
-const localizedMenuPaths = new Set(["/", "/about/", "/posts/", "/projects/", "/search/"]);
+const localizedMenuPaths = new Set(["/", "/about/", "/posts/", "/projects/", "/search/", "/admin/"]);
 const menuPath = (path: string) =>
 	localizedMenuPaths.has(path) ? localizedPath(locale, path) : path;
 
@@ -34,6 +34,7 @@ const navIcons: Record<string, string> = {
 	"/about/":
 		'<circle cx="8" cy="6" r="2.5"/><path d="M3 13c.6-2.4 2.6-3.5 5-3.5s4.4 1.1 5 3.5"/>',
 	"/search/": '<circle cx="6.5" cy="6.5" r="4"/><path d="m10 10 4 4"/>',
+	"/admin/": '<path d="m10 2 4 4-8 8H2v-4zM8 4l4 4"/>',
 };
 
 const languageIcon =
