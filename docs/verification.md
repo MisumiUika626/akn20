@@ -44,5 +44,19 @@ GitHub Pages was enabled with `build_type: workflow`. The existing deploy workfl
 locked installation, type checking/build and search indexing before publication;
 the original CI also runs lint/build. The integration suite was run locally. GitHub
 rejected workflow updates because the OAuth credential lacks `workflow` scope, so
-both upstream workflow files are retained unchanged. Final workflow/public-site
-results are reported in the chat.
+both upstream workflow files are retained unchanged.
+
+## Publication
+
+Source commit: `20c99ba45d151ce1f741af96df00932945b367a7`.
+
+- [CI passed](https://github.com/MisumiUika626/akn20/actions/runs/38043691387).
+- [Pages build and deployment passed](https://github.com/MisumiUika626/akn20/actions/runs/38043691427).
+- [English site](https://misumiuika626.github.io/akn20/).
+- [Chinese site](https://misumiuika626.github.io/akn20/zh/).
+
+The same Chromium checks were then repeated against the **public** site. English
+and Chinese mobile layouts, theme persistence, welcome-article translation switching,
+and actual full-text search all passed without browser page exceptions. The public
+Chinese home contains the expected V1 copy; the public Pagefind entry contains
+English and Chinese indexes. Local source and remote `main` were synchronized.
