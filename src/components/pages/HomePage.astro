@@ -10,6 +10,7 @@ import { formatRailDate, formatStampDate } from "@/utils/date";
 import { absoluteUrl, withBase } from "@/utils/path";
 import { Schema } from "astro-seo-schema";
 import settings from "@/data/site-settings.json";
+import { getEntry, render } from "astro:content";
 
 interface Props {
 	locale: Locale;
@@ -27,6 +28,10 @@ const featuredLocale = featured ? postLocaleFromId(featured.id) : locale;
 const rest = timelinePosts.slice(1);
 const archiveCount = allPosts.length;
 const featuredShowcase = getFeaturedShowcase();
+const aboutEntryId = locale === "zh" ? "zh/about" : "about";
+const aboutEntry = await getEntry("page", aboutEntryId);
+if (!aboutEntry) throw new Error(`Missing src/content/page/${aboutEntryId}.md`);
+const { Content: AboutContent } = await render(aboutEntry);
 
 const profile = siteConfig.profile;
 const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
@@ -46,12 +51,6 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 			{
 				"@type": "ListItem",
 				position: 2,
-				name: t.nav["/about/"],
-				item: siteUrl(localizedPath(locale, "/about/")),
-			},
-			{
-				"@type": "ListItem",
-				position: 3,
 				name: t.nav["/posts/"],
 				item: siteUrl(localizedPath(locale, "/posts")),
 			},
@@ -61,8 +60,13 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 
 	<PageLayout locale={locale} meta={{ alternatePath: "/", title: t.nav["/"], description }}>
 	<section class="hero">
-		{settings.avatar && <img class="home-avatar" src={settings.avatar.startsWith("data:") ? settings.avatar : withBase(settings.avatar)} alt={locale === "zh" ? "博主头像" : "Author avatar"} width="88" height="88" />}
-		<h1>{siteConfig.title}</h1>
+		<div class:list={["hero-profile", { "has-avatar": settings.avatar }]}>
+			{settings.avatar && <img class="home-avatar" src={settings.avatar.startsWith("data:") ? settings.avatar : withBase(settings.avatar)} alt={locale === "zh" ? "博主头像" : "Author avatar"} width="104" height="104" />}
+			<div class="hero-about">
+				<h1>{siteConfig.title}</h1>
+				<div class="about-copy"><AboutContent /></div>
+			</div>
+		</div>
 		<div class="socials">
 			{profile?.github && (
 				<>
@@ -162,17 +166,24 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	.hero {
 		margin-bottom: 76px;
 	}
-	.home-avatar { width: 88px; height: 88px; object-fit: cover; border-radius: 50%; margin-bottom: 18px; border: 1px solid #d8d5ce; }
+	.hero-profile { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
+	.hero-profile.has-avatar { grid-template-columns: 104px minmax(0, 1fr); gap: 28px; }
+	.home-avatar { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; border: 1px solid #d8d5ce; }
 	.hero h1 {
 		font-family: var(--type-heading-1-family);
 		font-size: clamp(28px, 5vw, 42px);
 		font-weight: 500;
 		line-height: 1.25;
 		letter-spacing: -0.025em;
-		margin: 0 0 24px;
+		margin: 0 0 14px;
 		max-width: 22ch;
 		text-wrap: balance;
 	}
+	.about-copy { font-family: var(--type-body-family); font-size: var(--type-body-size); line-height: 1.7; color: hsl(var(--theme-text-muted)); }
+	.about-copy :global(p) { margin: 0 0 10px; }
+	.about-copy :global(p:last-child), .about-copy :global(ul:last-child) { margin-bottom: 0; }
+	.about-copy :global(ul) { margin: 0 0 10px; padding-left: 1.2em; }
+	.about-copy :global(a) { text-decoration: underline; text-underline-offset: 3px; }
 	.interests {
 		font-family: var(--font-sans);
 		font-size: 12px;
@@ -215,6 +226,10 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	.socials .sep {
 		color: var(--faint);
 		margin: 0 9px;
+	}
+	@media (max-width: 520px) {
+		.hero-profile.has-avatar { grid-template-columns: 1fr; gap: 18px; }
+		.home-avatar { width: 88px; height: 88px; }
 	}
 
 	/* ---------- Writing timeline ---------- */

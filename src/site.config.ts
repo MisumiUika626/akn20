@@ -39,24 +39,12 @@ export const siteConfig: SiteConfig = {
 
 export const menuLinks: { path: string; title: string }[] = [
 	{
-		path: "/",
-		title: "Home",
-	},
-	{
 		path: "/posts/",
 		title: "Blog",
 	},
 	{
 		path: "/projects/",
 		title: "Projects",
-	},
-	{
-		path: "/about/",
-		title: "About",
-	},
-	{
-		path: "/search/",
-		title: "Search",
 	},
 ];
 

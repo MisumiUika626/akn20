@@ -2,12 +2,12 @@
 import { messages, type Locale } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
 import { withBase } from "@/utils/path";
-import { getPostsForLocale } from "@/data/post";
+import { getAllPosts } from "@/data/post";
 interface Props { locale: Locale; }
 const { locale } = Astro.props;
 const t = messages[locale];
 const bundlePath = withBase("/pagefind/");
-const hasPosts = (await getPostsForLocale(locale)).length > 0;
+const hasPosts = (await getAllPosts()).length > 0;
 ---
 <PageLayout locale={locale} meta={{ alternatePath: "/search/", title: t.search, description: locale === "zh" ? "搜索本站中文文章。" : "Search the English articles in this notebook." }}>
 	<h1 class="section-label">{t.search}</h1>
@@ -20,7 +20,7 @@ const hasPosts = (await getPostsForLocale(locale)).length > 0;
 	<script is:inline src={withBase("/pagefind/pagefind-ui.js")}></script>
 	<script is:inline define:vars={{ locale, bundlePath }}>
 		try {
-			new PagefindUI({
+			const search = new PagefindUI({
 				element: "#search", bundlePath, showImages: false,
 				translations: locale === "zh" ? {
 					placeholder: "搜索文章", clear_search: "清除", load_more: "加载更多",
@@ -30,6 +30,8 @@ const hasPosts = (await getPostsForLocale(locale)).length > 0;
 					searching: "正在搜索 [SEARCH_TERM]…", alt_search: "未找到结果，尝试其他关键词。",
 				} : {},
 			});
+			const query = new URLSearchParams(window.location.search).get("q")?.trim();
+			if (query) search.triggerSearch(query);
 			document.getElementById("search-status").hidden = true;
 		} catch {
 			document.getElementById("search-status").textContent = locale === "zh" ? "搜索暂时无法加载。请通过博客或标签浏览文章。" : "Search could not load. Please browse the Blog or tags.";
