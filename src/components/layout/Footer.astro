@@ -22,6 +22,8 @@ const year = new Date().getFullYear();
 		)}
 	</div>
 	<div class="right">
+		<a href={withBase(localizedPath(locale, "/categories/"))}>{t.categories}</a>
+		<span class="sep" aria-hidden="true">·</span>
 		<a href={withBase(localizedPath(locale, "/tags/"))}>{t.tags}</a>
 		<span class="sep" aria-hidden="true">·</span>
 		<a href={withBase(localizedPath(locale, "/rss.xml"))}>RSS</a>

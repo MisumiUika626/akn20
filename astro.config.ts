@@ -29,7 +29,7 @@ const BASE_PATH = process.env.BASE_PATH || "/";
 const START_URL = BASE_PATH.endsWith("/") ? BASE_PATH : `${BASE_PATH}/`;
 
 export default defineConfig({
-	site: "https://automann.github.io",
+	site: "https://misumiuika626.github.io",
 	base: BASE_PATH,
 	image: {
 		domains: ["webmention.io"],
@@ -66,8 +66,11 @@ export default defineConfig({
 				const pathname = new URL(page).pathname;
 				const basePrefix = BASE_PATH.replace(/\/+$/, "");
 				return ![
+					"/404/",
 					"/posts/designing-a-visual-system/",
 					"/posts/preparing-for-multilingual-content/",
+					"/showcase/",
+					"/zh/showcase/",
 				].some((legacyPath) => pathname === `${basePrefix}${legacyPath}`);
 			},
 			priority: 0.7,

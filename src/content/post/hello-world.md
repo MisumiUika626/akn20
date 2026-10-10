@@ -1,64 +1,40 @@
 ---
-title: "Hello, world"
-publishDate: 2026-03-01
-description: "A first post — and a quick tour of what the writing template can render."
-tags: [ intro, demo, guide ]
+title: "A notebook, one small step at a time"
+publishDate: 2026-10-10
+description: "Sample article: a small technical notebook for questions, experiments, and things worth revisiting."
+category: Notes
+tags: [notebook, sample]
+translationKey: welcome
 ---
 
-Welcome. This is the first post in your new blog. Replace it (or delete it) when you write your first real post.
+:::note
+This is a sample article for the first version of akn20. It demonstrates the writing format, not a completed research project or a personal achievement.
+:::
 
-## Headings, lists, links
+The useful part of a technical notebook is the trail it leaves: what question was asked, what was tried, what happened, and what remains uncertain.
 
-The body uses Newsreader for serif text and Maple Mono CN for code. Lists work the way you'd expect:
+## A small experiment
 
-- A bullet
-- Another bullet
-- Yet another
+Start with an explicit question. Choose a baseline, write down the input, and describe a result that would make you reconsider the idea.
 
-Numbered lists too:
+```python
+def mean(values):
+    if not values:
+        raise ValueError("expected at least one value")
+    return sum(values) / len(values)
 
-1. First item
-2. Second item
-3. Third item
-
-Inline links — like [Astro's docs](https://docs.astro.build) — are styled subtly, hover to confirm.
-
-## Code
-
-Fenced code blocks are rendered by [Expressive Code](https://expressive-code.com), with syntax highlighting, a copy
-button on hover, and a `min-light`/`min-dark` theme that follows the toggle:
-
-```ts
-function greet(name: string): string {
-    return `Hello, ${name}!`;
-}
+assert mean([1, 2, 3]) == 2
 ```
 
-```bash
-# CLI blocks render as terminals.
-pnpm install
-pnpm dev
-```
+Mathematics can share the same page as code. The sample mean is $\bar{x} = \frac{1}{n}\sum_{i=1}^{n} x_i$.
 
-## Math
+## Leave a useful record
 
-[KaTeX](https://katex.org) is wired up. Inline like $E = mc^2$ and as a display:
+- State the question and the assumptions.
+- Record the baseline and the test conditions.
+- Separate observations from interpretations.
+- End with the next small, testable question.
 
-$$
-\int_{-\infty}^{\infty} e^{-x^2}\,dx = \sqrt{\pi}
-$$
+> A clear limitation is part of a useful result.
 
-## Quotes & emphasis
-
-> A blockquote sits with a left rule, in italics, slightly muted.
->
-> Multiple paragraphs work.
-
-You can use *emphasis* and **strong** the usual way.
-
-## What's next
-
-- Edit `src/site.config.ts` with your name, profile, and (optionally) Giscus and analytics IDs.
-- Replace `src/content/page/about.md` with your own bio.
-- Drop new posts into `src/content/post/` — the filename becomes the URL slug.
-- See the README for full setup and customization steps.
+Future posts can replace this sample with actual notes and evidence.

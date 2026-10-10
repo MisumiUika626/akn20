@@ -87,6 +87,11 @@
 
 /* Shared component utilities — hoisted from page-scoped styles. */
 
+.browse-links { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 36px; font-family: var(--font-sans); font-size: 13px; }
+.browse-links a, .post-category a { text-decoration: underline; text-underline-offset: 4px; color: hsl(var(--theme-text-muted)); }
+a:focus-visible, button:focus-visible { outline: 2px solid hsl(var(--theme-accent)); outline-offset: 4px; }
+.post-category { font-family: var(--font-sans); font-size: 12px; margin: 0 0 16px; }
+
 @media (prefers-reduced-motion: no-preference) {
 	.post,
 	ul.work-list a,

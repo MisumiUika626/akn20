@@ -1,0 +1,46 @@
+---
+import { messages, type Locale } from "@/i18n/config";
+import PageLayout from "@/layouts/Base.astro";
+import { withBase } from "@/utils/path";
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+const t = messages[locale];
+const bundlePath = withBase("/pagefind/");
+---
+<PageLayout locale={locale} meta={{ alternatePath: "/search/", title: t.search, description: locale === "zh" ? "搜索本站中文文章。" : "Search the English articles in this notebook." }}>
+	<h1 class="section-label">{t.search}</h1>
+	<p>{locale === "zh" ? "按标题、内容、分类或标签查找中文文章。切换语言可搜索英文文章。" : "Find English articles by title, content, category or tag. Switch language to search Chinese articles."}</p>
+	<link rel="stylesheet" href={withBase("/pagefind/pagefind-ui.css")} />
+	<div id="search" data-pagefind-ignore></div>
+	<p id="search-status" role="status">{locale === "zh" ? "正在加载搜索；开发模式下请先构建并预览。" : "Loading search. In development, build and preview the site first."}</p>
+	<noscript>{locale === "zh" ? "搜索需要启用 JavaScript；也可通过博客、分类和标签浏览文章。" : "Search requires JavaScript. You can also browse the Blog, categories and tags."}</noscript>
+	<script is:inline src={withBase("/pagefind/pagefind-ui.js")}></script>
+	<script is:inline define:vars={{ locale, bundlePath }}>
+		try {
+			new PagefindUI({
+				element: "#search", bundlePath, showImages: false,
+				translations: locale === "zh" ? {
+					placeholder: "搜索文章", clear_search: "清除", load_more: "加载更多",
+					search_label: "搜索本站", filters_label: "筛选", zero_results: "未找到 [SEARCH_TERM] 的结果",
+					many_results: "[COUNT] 条结果：[SEARCH_TERM]", one_result: "1 条结果：[SEARCH_TERM]",
+					total_zero_results: "没有结果", total_one_result: "1 条结果", total_many_results: "[COUNT] 条结果",
+					searching: "正在搜索 [SEARCH_TERM]…", alt_search: "未找到结果，尝试其他关键词。",
+				} : {},
+			});
+			document.getElementById("search-status").hidden = true;
+		} catch {
+			document.getElementById("search-status").textContent = locale === "zh" ? "搜索暂时无法加载。请通过博客或标签浏览文章。" : "Search could not load. Please browse the Blog or tags.";
+		}
+	</script>
+</PageLayout>
+<style>
+	#search { margin: 32px 0 72px; }
+	:global(.pagefind-ui) {
+		--pagefind-ui-primary: hsl(var(--theme-accent));
+		--pagefind-ui-text: hsl(var(--theme-text));
+		--pagefind-ui-background: hsl(var(--theme-bg));
+		--pagefind-ui-border: var(--hairline);
+		--pagefind-ui-tag: var(--accent-soft);
+		--pagefind-ui-font: var(--font-sans);
+	}
+</style>

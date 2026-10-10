@@ -104,10 +104,7 @@ test("schema-maximum copy is bounded before it reaches the fixed-size layout", (
 });
 
 test("the production build emits 1200 by 630 article cards for both locales", async () => {
-	for (const path of [
-		"../dist/og-image/hello-world.png",
-		"../dist/og-image/zh/designing-a-visual-system.png",
-	]) {
+	for (const path of ["../dist/og-image/hello-world.png", "../dist/og-image/zh/hello-world.png"]) {
 		const png = await readFile(new URL(path, import.meta.url));
 		assert.deepEqual([...png.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
 		assert.equal(png.readUInt32BE(16), 1200);

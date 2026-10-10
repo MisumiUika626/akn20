@@ -11,14 +11,20 @@ import newsreaderLatin from "@fontsource-variable/newsreader/files/newsreader-la
 
 type Props = SiteMeta & { locale: Locale };
 
-const {alternatePath, articleDate, description, locale, ogImage, title} = Astro.props;
+const {alternatePath, alternateUrls, articleDate, description, locale, ogImage, title} = Astro.props;
 const fontStylesheet = locale === "zh" ? chineseFontStylesheet : englishFontStylesheet;
 
 const titleSeparator = "|";
 const siteTitle = `${title} ${titleSeparator} ${siteConfig.title}`;
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const isNotFound = /\/404\/?$/.test(Astro.url.pathname);
+const canonicalURL = new URL(isNotFound ? Astro.url.pathname.replace(/\/404\/?$/, "/404.html") : Astro.url.pathname, Astro.site);
 const socialImageURL = absoluteUrl(ogImage ? ogImage : "/social-card.png", Astro.site);
-const languageAlternates = alternatePath
+const languageAlternates = alternateUrls?.en && alternateUrls.zh
+    ? locales.map((alternateLocale) => ({
+        href: absoluteUrl(alternateUrls[alternateLocale] ?? "/", Astro.site),
+        hreflang: localeMeta[alternateLocale].htmlLang,
+    }))
+    : alternatePath
     ? locales.map((alternateLocale) => ({
         href: absoluteUrl(localizedPath(alternateLocale, alternatePath), Astro.site),
         hreflang: localeMeta[alternateLocale].htmlLang,
@@ -55,13 +61,14 @@ const goatcounter = analytics?.goatcounterUrl;
     ))
 }
 {
-    alternatePath && (
-        <link href={absoluteUrl(localizedPath(defaultLocale, alternatePath), Astro.site)} hreflang="x-default" rel="alternate"/>
+    (alternatePath || alternateUrls?.en) && (
+        <link href={absoluteUrl(alternateUrls?.en ?? localizedPath(defaultLocale, alternatePath), Astro.site)} hreflang="x-default" rel="alternate"/>
     )
 }
 
 <meta content={siteTitle} name="title"/>
 <meta content={description} name="description"/>
+{isNotFound && <meta name="robots" content="noindex" />}
 <meta content={siteConfig.author} name="author"/>
 
 {locale === "en" && <link rel="preload" as="font" type="font/woff2" href={newsreaderLatin} crossorigin />}

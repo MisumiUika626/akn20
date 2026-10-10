@@ -1,0 +1,32 @@
+---
+title: "写一篇双语技术笔记"
+publishDate: 2026-10-09
+description: "示例指南：在 akn20 中使用分类、标签、文章译文、代码块，以及 Markdown 和 MDX。"
+category: 指南
+tags: [写作, 示例]
+translationKey: writing-guide
+---
+
+> 这是博客模板的示例指南，可以在准备好真实文章后替换。
+
+## 让文章信息保持简单
+
+每篇文章包括标题、日期、摘要、一个分类和若干标签。分类区分文章的大方向，标签标记更具体的主题。
+
+```yaml
+category: 笔记
+tags: [算法, python]
+translationKey: my-experiment
+```
+
+## 关联中英文译文
+
+中英文文件使用相同的 `translationKey`，文件名可以不同。两篇都发布后，语言切换按钮会打开对应译文；只有一篇时，会打开另一语言的博客列表。
+
+## 选择合适的格式
+
+Markdown 用来写正文、代码和公式。MDX 还可以嵌入简单组件：
+
+<aside aria-label="示例提示" style={{ borderLeft: "2px solid currentColor", paddingLeft: "1rem" }}>
+  让实验足够小，便于复现。
+</aside>

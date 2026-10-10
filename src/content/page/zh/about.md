@@ -1,14 +1,18 @@
 ---
 title: 关于
-description: 一份简短的个人介绍，可在 src/content/page/zh/about.md 中修改。
+description: "关于 akn20：由 MisumiUika626 维护的中英文技术笔记。"
 ---
 
-这是中文 About 页面，对应的 Markdown 文件位于 `src/content/page/zh/about.md`，你可以自由修改。页面结构刻意保持开放，适合编写个人介绍、列表、简历或其他内容。
+我是 **MisumiUika626**。这里是 **akn20**，用来记录技术笔记、学习过程和小实验。
 
-可以从下面这些示例开始：
+这本笔记关注计算机科学、算法与系统，以及可以通过动手构建来探索的问题。文章希望把问题、方法、观察和局限写清楚，方便之后回看。
 
-- 👋 用一句话介绍自己——从事什么工作、在哪里、从什么时候开始。
-- 🛠 你最常使用的工具。
-- 📝 你通常会在这里写些什么。
+## 如何阅读
 
-你可以通过 [GitHub](https://github.com/example)、[Twitter / X](https://x.com/example) 或[电子邮件](mailto:john@example.com)联系我。
+中文和英文文章有独立列表。有译文时，语言切换按钮会直接打开对应文章。分类整理大方向，标签和搜索帮助查找具体内容。
+
+首版包含明确标注的示例文章，用于展示网站功能，之后会逐步替换为真实笔记。
+
+## 联系与源码
+
+可以在 [GitHub](https://github.com/MisumiUika626) 找到我。[博客源码](https://github.com/MisumiUika626/akn20) 已公开，基于 [Astro Kami](https://github.com/automann/astro-kami) 构建。

@@ -45,7 +45,7 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 				"@type": "ListItem",
 				position: 2,
 				name: t.nav["/about/"],
-				item: siteUrl("/about"),
+				item: siteUrl(localizedPath(locale, "/about/")),
 			},
 			{
 				"@type": "ListItem",
@@ -59,7 +59,10 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 
 	<PageLayout locale={locale} meta={{ alternatePath: "/", title: t.nav["/"], description }}>
 	<section class="hero">
+		<div class="section-label">{locale === "zh" ? "技术笔记 / TECHNICAL NOTEBOOK" : "TECHNICAL NOTEBOOK"}</div>
+		<h1>{locale === "zh" ? "把问题写清楚，把想法做出来。" : "Think carefully. Build small. Write it down."}</h1>
 		<p>{description}</p>
+		<div class="interests">{locale === "zh" ? "关注方向：计算机科学 · 算法与系统 · 可复现实验" : "Areas of interest: computer science · algorithms & systems · reproducible experiments"}</div>
 		<div class="socials">
 			{profile?.github && (
 				<>
@@ -146,7 +149,7 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 				))}
 			</ul>
 			<div class="view-all-link showcase-link" style={`--i: ${featuredShowcase.length + 1}`}>
-				<a data-astro-prefetch href={withBase(localizedPath(locale, "/showcase/"))}>
+				<a data-astro-prefetch href={withBase(localizedPath(locale, "/projects/"))}>
 					{t.viewAllProjects(showcase.length)}
 				</a>
 			</div>
@@ -158,6 +161,22 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	/* ---------- Hero ---------- */
 	.hero {
 		margin-bottom: 76px;
+	}
+	.hero h1 {
+		font-family: var(--type-heading-1-family);
+		font-size: clamp(28px, 5vw, 42px);
+		font-weight: 500;
+		line-height: 1.25;
+		letter-spacing: -0.025em;
+		margin: 0 0 24px;
+		max-width: 22ch;
+		text-wrap: balance;
+	}
+	.interests {
+		font-family: var(--font-sans);
+		font-size: 12px;
+		line-height: 1.8;
+		color: hsl(var(--theme-text-muted));
 	}
 	.hero p {
 		font-family: var(--type-intro-family);

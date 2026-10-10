@@ -113,7 +113,7 @@ export function articleCardMarkup(
 					tw="text-xl tracking-widest uppercase"
 					style="color: #d6a06c; font-family: ${fonts.brand};"
 				>
-					Astro Kami /
+					akn20 /
 				</span>
 				<span tw="text-xl ml-3 tracking-widest" style="color: #d6a06c; font-family: ${fonts.meta};">
 					${model.sectionLabel}

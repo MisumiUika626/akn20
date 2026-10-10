@@ -1,5 +1,6 @@
 ---
-import ShowcasePage from "@/components/pages/ShowcasePage.astro";
+import LegacyRedirectPage from "@/components/pages/LegacyRedirectPage.astro";
+import { withBase } from "@/utils/path";
 ---
 
-<ShowcasePage locale="en" />
+<LegacyRedirectPage destination={withBase("/projects/")} />

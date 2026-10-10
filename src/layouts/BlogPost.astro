@@ -4,7 +4,7 @@ import { type CollectionEntry, render } from "astro:content";
 
 import ShareButtons from "@/components/blog/ShareButtons.astro";
 import WebMentions from "@/components/blog/webmentions/index.astro";
-import { getPostSlug, getPostsForLocale, sortMDByDate } from "@/data/post";
+import { getPostAlternates, getPostSlug, getPostsForLocale, sortMDByDate } from "@/data/post";
 import { localizedPath, messages, postLocaleFromId } from "@/i18n/config";
 import { siteConfig } from "@/site-config";
 import { formatBylineDate, formatEyebrowDate, formatReadingTime } from "@/utils/date";
@@ -21,6 +21,7 @@ interface Props {
 const { post } = Astro.props;
 
 const locale = postLocaleFromId(post.id);
+const alternateUrls = await getPostAlternates(post);
 const t = messages[locale];
 const sortedAll = sortMDByDate(await getPostsForLocale(locale));
 const idx = sortedAll.findIndex((p) => p.id === post.id);
@@ -54,8 +55,8 @@ const giscusLang = locale === "zh" ? "zh-CN" : "en";
 // Custom giscus themes only in prod: the giscus.app iframe can't fetch CSS from localhost / private IPs.
 const giscusThemes = import.meta.env.PROD
 	? {
-			light: new URL("/giscus-light.css", Astro.site).toString(),
-			dark: new URL("/giscus-dark.css", Astro.site).toString(),
+			light: absoluteUrl("/giscus-light.css", Astro.site),
+			dark: absoluteUrl("/giscus-dark.css", Astro.site),
 		}
 	: { light: "noborder_light", dark: "noborder_dark" };
 ---
@@ -78,7 +79,7 @@ const giscusThemes = import.meta.env.PROD
 	}}
 />
 
-<BaseLayout locale={locale} meta={{ articleDate, description, ogImage: socialImage, title }}>
+<BaseLayout locale={locale} meta={{ alternateUrls, articleDate, description, ogImage: socialImage, title }}>
 	<div class="reading-progress" id="reading-progress" aria-hidden="true"></div>
 	<div class="post-shell">
 		<div class="post-main" data-pagefind-body>
@@ -88,6 +89,9 @@ const giscusThemes = import.meta.env.PROD
 				</div>
 				{draft && <span class="draft-flag">({t.draft})</span>}
 				<h1 class="post-title">{title}</h1>
+				<p class="post-category">
+					<a data-pagefind-filter={`${t.categories}:${post.data.category}`} href={withBase(localizedPath(locale, `/categories/${encodeURIComponent(post.data.category)}/`))}>{t.categories}: {post.data.category}</a>
+				</p>
 				<p class="byline">
 					{authorName && <>{t.by} {authorName}<span class="sep">·</span></>}{bylineDate}{localizedReadingTime && (
 						<>
@@ -99,7 +103,7 @@ const giscusThemes = import.meta.env.PROD
 					<div class="post-tags">
 						{tags.map((tag, i) => (
 							<>
-								<a class="tag-link" data-pagefind-filter="tag" href={withBase(localizedPath(locale, `/tags/${encodeURIComponent(tag)}/`))}>{tag}</a>{i < tags.length - 1 && <span class="sep">·</span>}
+								<a class="tag-link" data-pagefind-filter={t.tags} href={withBase(localizedPath(locale, `/tags/${encodeURIComponent(tag)}/`))}>{tag}</a>{i < tags.length - 1 && <span class="sep">·</span>}
 							</>
 						))}
 					</div>

@@ -69,6 +69,7 @@ export interface SiteConfig {
 }
 
 export interface SiteMeta {
+	alternateUrls?: Partial<Record<"en" | "zh", string>>;
 	/** Shared route path for pages that have localized variants. */
 	alternatePath?: string;
 	articleDate?: string | undefined;

@@ -2,7 +2,7 @@ import type { SiteConfig } from "@/types";
 import type { AstroExpressiveCodeOptions } from "astro-expressive-code";
 
 export const siteConfig: SiteConfig = {
-	author: "Your Name",
+	author: "MisumiUika626",
 	date: {
 		locale: "en-US",
 		options: {
@@ -12,22 +12,15 @@ export const siteConfig: SiteConfig = {
 		},
 	},
 	description:
-		"A minimal personal blog & writing space, built with Astro. Notes on whatever I happen to be thinking about — usually some mix of code, design, and the occasional half-formed idea. Replace this paragraph in src/site.config.ts to make the site your own.",
+		"A technical notebook on computer science, learning by building, and small reproducible experiments. Written in English and Chinese.",
 	lang: "en-US",
 	ogLocale: "en_US",
 	sortPostsByUpdatedDate: false,
-	title: "Astro Kami",
+	title: "akn20",
 	hideThemeCredit: false,
 	profile: {
-		name: "John Doe",
-		email: "john@example.com",
-		github: "https://github.com/example",
-		twitter: "https://x.com/example",
-		jobTitle: "Software Engineer",
-		employer: "Example Inc.",
-		employerUrl: "https://example.com",
-		alumni: "Example University",
-		avatar: "/avatar.png",
+		name: "MisumiUika626",
+		github: "https://github.com/MisumiUika626",
 	},
 	// Uncomment & fill in to enable Giscus comments on every post.
 	// comments: {
@@ -50,15 +43,19 @@ export const menuLinks: { path: string; title: string }[] = [
 	},
 	{
 		path: "/posts/",
-		title: "Posts",
+		title: "Blog",
 	},
 	{
-		path: "/showcase/",
-		title: "Showcase",
+		path: "/projects/",
+		title: "Projects",
 	},
 	{
 		path: "/about/",
 		title: "About",
+	},
+	{
+		path: "/search/",
+		title: "Search",
 	},
 ];
 

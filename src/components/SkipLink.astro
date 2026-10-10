@@ -1,3 +1,8 @@
+---
+import type { Locale } from "@/i18n/config";
+interface Props { locale: Locale; }
+const { locale } = Astro.props;
+---
 <a class="sr-only focus:not-sr-only focus:fixed focus:start-1 focus:top-1.5" href="#main"
-	>skip to content
+	>{locale === "zh" ? "跳至正文" : "Skip to content"}
 </a>

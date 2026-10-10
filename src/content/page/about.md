@@ -1,14 +1,18 @@
 ---
 title: About
-description: A short introduction. Replace this in src/content/page/about.md.
+description: "About akn20, a bilingual technical notebook by MisumiUika626."
 ---
 
-This is the About page. It's a markdown file at `src/content/page/about.md` — edit it freely. The shape is intentionally unstructured so you can write a paragraph, a list, a CV, or whatever fits.
+I'm **MisumiUika626**. This is **akn20**, a place for technical notes, learning logs, and small experiments.
 
-A few example bullets to get going:
+The notebook focuses on computer science, algorithms and systems, and questions that can be explored by building something small. Posts aim to make the question, method, observations and limitations easy to revisit.
 
-- 👋 One-line intro — what you do, where, since when.
-- 🛠 The tools you reach for first.
-- 📝 What you tend to write about here.
+## Reading this notebook
 
-Find me on [GitHub](https://github.com/example), [Twitter / X](https://x.com/example), or by [email](mailto:john@example.com).
+English and Chinese articles have their own archives. When a translation is available, the language control takes you directly to it. Categories organize broad topics; tags and search help find a specific note.
+
+The first version includes clearly labeled sample articles. They demonstrate the site's features and will be replaced as actual notes are written.
+
+## Contact and source
+
+Find me on [GitHub](https://github.com/MisumiUika626). The [blog source](https://github.com/MisumiUika626/akn20) is public and built on [Astro Kami](https://github.com/automann/astro-kami).

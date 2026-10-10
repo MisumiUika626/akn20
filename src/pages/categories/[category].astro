@@ -1,0 +1,13 @@
+---
+import CategoryPage from "@/components/pages/CategoryPage.astro";
+import { getCategoriesWithCount, getPostsForLocale, sortMDByDate } from "@/data/post";
+import type { GetStaticPaths } from "astro";
+export const getStaticPaths = (async () => {
+	const posts = sortMDByDate(await getPostsForLocale("en"));
+	return getCategoriesWithCount(posts).map(([category]) => ({
+		params: { category }, props: { category, posts: posts.filter((p) => p.data.category === category) },
+	}));
+}) satisfies GetStaticPaths;
+const { category, posts } = Astro.props;
+---
+<CategoryPage locale="en" category={category} posts={posts} />

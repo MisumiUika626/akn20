@@ -20,6 +20,8 @@ const post = defineCollection({
 				.optional(),
 			description: z.string().min(10).max(160),
 			draft: z.boolean().default(false),
+			category: z.string().trim().min(1).max(50).default("Notes"),
+			translationKey: z.string().trim().min(1).optional(),
 			ogImage: z.string().optional(),
 			publishDate: z
 				.string()

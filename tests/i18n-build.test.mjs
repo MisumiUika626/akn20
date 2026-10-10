@@ -2,8 +2,8 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const siteOrigin = "https://automann.github.io";
-const basePath = "/astro-kami";
+const siteOrigin = "https://misumiuika626.github.io";
+const basePath = "/akn20";
 
 async function readPage(path) {
 	return readFile(new URL(`../dist${path}index.html`, import.meta.url), "utf8");
@@ -39,19 +39,19 @@ function languageAlternates(html) {
 
 test("Showcase language variants identify each other to search engines", async () => {
 	const expected = [
-		["en", `${siteOrigin}${basePath}/showcase/`],
-		["zh-CN", `${siteOrigin}${basePath}/zh/showcase/`],
-		["x-default", `${siteOrigin}${basePath}/showcase/`],
+		["en", `${siteOrigin}${basePath}/projects/`],
+		["zh-CN", `${siteOrigin}${basePath}/zh/projects/`],
+		["x-default", `${siteOrigin}${basePath}/projects/`],
 	];
 
-	for (const path of ["/showcase/", "/zh/showcase/"]) {
+	for (const path of ["/projects/", "/zh/projects/"]) {
 		const html = await readPage(path);
 		assert.deepEqual(languageAlternates(html), expected);
 	}
 });
 
 test("Every paired static page family publishes language alternates", async () => {
-	for (const route of ["/", "/about/", "/posts/", "/tags/", "/showcase/"]) {
+	for (const route of ["/", "/about/", "/posts/", "/tags/", "/projects/"]) {
 		const expected = [
 			["en", `${siteOrigin}${basePath}${route}`],
 			["zh-CN", `${siteOrigin}${basePath}/zh${route}`],
@@ -67,8 +67,8 @@ test("Every paired static page family publishes language alternates", async () =
 
 test("The sitemap groups localized Showcase URLs", async () => {
 	const sitemap = await readFile(new URL("../dist/sitemap-0.xml", import.meta.url), "utf8");
-	const englishUrl = `${siteOrigin}${basePath}/showcase/`;
-	const chineseUrl = `${siteOrigin}${basePath}/zh/showcase/`;
+	const englishUrl = `${siteOrigin}${basePath}/projects/`;
+	const chineseUrl = `${siteOrigin}${basePath}/zh/projects/`;
 
 	for (const pageUrl of [englishUrl, chineseUrl]) {
 		const entry = sitemap.match(new RegExp(`<url><loc>${pageUrl}</loc>(.*?)</url>`))?.[1];
@@ -81,16 +81,16 @@ test("The sitemap groups localized Showcase URLs", async () => {
 test("Showcase routes preserve localized content, navigation, and canonical URLs", async () => {
 	const cases = [
 		{
-			path: "/showcase/",
-			navigationHref: `${basePath}/showcase/`,
-			canonicalHref: `${siteOrigin}${basePath}/showcase/`,
-			text: "A handful of projects I've built.",
+			path: "/projects/",
+			navigationHref: `${basePath}/projects/`,
+			canonicalHref: `${siteOrigin}${basePath}/projects/`,
+			text: "Source code and notes from projects. Start with the notebook itself.",
 		},
 		{
-			path: "/zh/showcase/",
-			navigationHref: `${basePath}/zh/showcase/`,
-			canonicalHref: `${siteOrigin}${basePath}/zh/showcase/`,
-			text: "我开发的一些项目。",
+			path: "/zh/projects/",
+			navigationHref: `${basePath}/zh/projects/`,
+			canonicalHref: `${siteOrigin}${basePath}/zh/projects/`,
+			text: "项目源码与记录，从这本技术笔记本身开始。",
 		},
 	];
 
@@ -111,7 +111,7 @@ test("Showcase routes preserve localized content, navigation, and canonical URLs
 });
 
 test("Pages without a translation do not advertise nonexistent alternates", async () => {
-	const html = await readPage("/posts/hello-world/");
+	const html = await readPage("/posts/reading-notes/");
 	assert.deepEqual(languageAlternates(html), []);
 });
 
@@ -119,8 +119,8 @@ test("Home pages report the total number of Showcase projects", async () => {
 	const englishHome = await readPage("/");
 	const chineseHome = await readPage("/zh/");
 
-	assert.match(englishHome, /View all 4 projects →/);
-	assert.match(chineseHome, /查看全部 4 个项目 →/);
+	assert.match(englishHome, /View all 1 project →/);
+	assert.match(chineseHome, /查看全部 1 个项目 →/);
 });
 
 test("Home pages load only their locale-specific Maple stylesheet", async () => {
@@ -202,19 +202,19 @@ test("About routes render their localized Markdown documents", async () => {
 	const englishAbout = await readPage("/about/");
 	const chineseAbout = await readPage("/zh/about/");
 
-	assert.match(englishAbout, /This is the About page\./);
-	assert.match(chineseAbout, /这是中文 About 页面/);
+	assert.match(englishAbout, /a place for technical notes/);
+	assert.match(chineseAbout, /用来记录技术笔记/);
 });
 
 test("Legacy post URLs remain valid, non-indexed redirect documents", async () => {
 	const cases = [
 		{
 			legacyPath: "/posts/designing-a-visual-system/",
-			destination: `${basePath}/zh/posts/designing-a-visual-system/`,
+			destination: `${basePath}/zh/posts/hello-world/`,
 		},
 		{
 			legacyPath: "/posts/preparing-for-multilingual-content/",
-			destination: `${basePath}/zh/posts/preparing-for-multilingual-content/`,
+			destination: `${basePath}/zh/posts/writing-guide/`,
 		},
 	];
 
@@ -236,11 +236,12 @@ test("Legacy post URLs remain valid, non-indexed redirect documents", async () =
 		);
 		assert.ok(metas.some(({ content, name }) => name === "robots" && content === "noindex"));
 		assert.ok(
-			links.some(
-				({ href, rel }) => href === `${siteOrigin}${destination}` && rel === "canonical",
-			),
+			links.some(({ href, rel }) => href === `${siteOrigin}${destination}` && rel === "canonical"),
 			`${legacyPath} canonical`,
 		);
-		assert.ok(anchors.some(({ href }) => href === destination), `${legacyPath} fallback link`);
+		assert.ok(
+			anchors.some(({ href }) => href === destination),
+			`${legacyPath} fallback link`,
+		);
 	}
 });

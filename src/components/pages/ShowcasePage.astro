@@ -13,7 +13,7 @@ interface Props {
 const { locale } = Astro.props;
 const t = messages[locale];
 const homePath = localizedPath(locale, "/");
-const showcasePath = localizedPath(locale, "/showcase/");
+const showcasePath = localizedPath(locale, "/projects/");
 const sortedShowcase = getShowcaseByPriority();
 ---
 
@@ -41,7 +41,7 @@ const sortedShowcase = getShowcaseByPriority();
 <PageLayout
 	locale={locale}
 	meta={{
-		alternatePath: "/showcase/",
+		alternatePath: "/projects/",
 		title: t.showcase,
 		description: t.showcaseDescription,
 	}}

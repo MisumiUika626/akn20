@@ -4,7 +4,7 @@ import SkipLink from "@/components/SkipLink.astro";
 import ThemeProvider from "@/components/ThemeProvider.astro";
 import Footer from "@/components/layout/Footer.astro";
 import Header from "@/components/layout/Header.astro";
-import { localeMeta, normalizeLocale, type Locale } from "@/i18n/config";
+import { localizedPath, localeMeta, normalizeLocale, type Locale } from "@/i18n/config";
 import { siteConfig } from "@/site-config";
 import type { SiteMeta } from "@/types";
 
@@ -14,21 +14,23 @@ interface Props {
 }
 
 const {
-	meta: { alternatePath, articleDate, description = siteConfig.description, ogImage, title },
+	meta: { alternatePath, alternateUrls, articleDate, description = siteConfig.description, ogImage, title },
 	locale: localeProp,
 } = Astro.props;
 const locale = normalizeLocale(localeProp ?? Astro.currentLocale);
+const otherLocale = locale === "en" ? "zh" : "en";
+const switchPath = alternateUrls?.[otherLocale] ?? (alternatePath ? localizedPath(otherLocale, alternatePath) : undefined);
 ---
 
 <html class="scroll-smooth" lang={localeMeta[locale].htmlLang}>
 	<head>
 		<ThemeProvider />
-				<BaseHead alternatePath={alternatePath} articleDate={articleDate} description={description} locale={locale} ogImage={ogImage} title={title} />
+				<BaseHead alternatePath={alternatePath} alternateUrls={alternateUrls} articleDate={articleDate} description={description} locale={locale} ogImage={ogImage} title={title} />
 	</head>
 	<body>
-		<SkipLink />
+		<SkipLink locale={locale} />
 		<div class="wrap">
-				<Header locale={locale} />
+				<Header locale={locale} switchPath={switchPath} />
 			<main id="main">
 				<slot />
 			</main>

@@ -4,103 +4,109 @@ export type Locale = (typeof locales)[number];
 export const defaultLocale: Locale = "en";
 
 export const localeMeta: Record<
-  Locale,
-  { dateLocale: string; htmlLang: string; ogLocale: string }
+	Locale,
+	{ dateLocale: string; htmlLang: string; ogLocale: string }
 > = {
-  en: { dateLocale: "en-US", htmlLang: "en", ogLocale: "en_US" },
-  zh: { dateLocale: "zh-CN", htmlLang: "zh-CN", ogLocale: "zh_CN" },
+	en: { dateLocale: "en-US", htmlLang: "en", ogLocale: "en_US" },
+	zh: { dateLocale: "zh-CN", htmlLang: "zh-CN", ogLocale: "zh_CN" },
 };
 
 export const messages = {
-  en: {
-    backToTop: "Back to Top",
-    by: "By",
-    copied: "Copied",
-    copyLink: "Copy link",
-    draft: "Draft",
-    homeDescription:
-      "A minimal personal blog & writing space, built with Astro. Notes on whatever I happen to be thinking about — usually some mix of code, design, and the occasional half-formed idea.",
-    latest: "Latest",
-    link: "Link",
-    morePosts: "More posts",
-    newer: "Newer",
-    older: "Older",
-    posts: "Posts",
-    postsDescription: "Read my collection of posts and the things that interest me",
-    poweredBy: "Powered by",
-    share: "Share",
-    showcase: "Showcase",
-    showcaseDescription: "A handful of projects I've built.",
-    tags: "Tags",
-    updated: "Updated",
-    viewAllPosts: (count: number) => `View all ${count} posts →`,
-    viewAllProjects: (count: number) => `View all ${count} projects →`,
-    webmentions: "Webmentions for this post",
-    webmentionsCredit: "Responses powered by",
-    writing: "Writing",
-    nav: {
-      "/": "Home",
-      "/about/": "About",
-      "/posts/": "Posts",
-      "/showcase/": "Showcase",
-    } as Record<string, string>,
-    theme: { dark: "Dark", light: "Light", toggle: "Toggle theme" },
-  },
-  zh: {
-    backToTop: "Back to Top",
-    by: "By",
-    copied: "Copied",
-    copyLink: "Copy link",
-    draft: "Draft",
-    homeDescription:
-      "一个使用 Astro 构建的个人博客与写作空间，记录关于代码、设计和日常思考的文字。",
-    latest: "Latest",
-    link: "Link",
-    morePosts: "More posts",
-    newer: "Newer",
-    older: "Older",
-    posts: "Posts",
-    postsDescription: "阅读本站发布的文章与思考。",
-    poweredBy: "Powered by",
-    share: "Share",
-    showcase: "Showcase",
-    showcaseDescription: "我开发的一些项目。",
-    tags: "Tags",
-    updated: "Updated",
-    viewAllPosts: (count: number) => `查看全部 ${count} 篇文章 →`,
-    viewAllProjects: (count: number) => `查看全部 ${count} 个项目 →`,
-    webmentions: "这篇文章的站外回应",
-    webmentionsCredit: "回应数据由以下服务提供：",
-    writing: "Writing",
-    nav: {
-      "/": "Home",
-      "/about/": "About",
-      "/posts/": "Posts",
-      "/showcase/": "Showcase",
-    } as Record<string, string>,
-    theme: { dark: "Dark", light: "Light", toggle: "Toggle theme" },
-  },
+	en: {
+		backToTop: "Back to Top",
+		by: "By",
+		copied: "Copied",
+		copyLink: "Copy link",
+		draft: "Draft",
+		categories: "Categories",
+		search: "Search",
+		homeDescription:
+			"A technical notebook on computer science, learning by building, and small reproducible experiments. Written in English and Chinese.",
+		latest: "Latest",
+		link: "Link",
+		morePosts: "More posts",
+		newer: "Newer",
+		older: "Older",
+		posts: "Blog",
+		postsDescription: "Technical notes, learning logs, and small experiments.",
+		poweredBy: "Powered by",
+		share: "Share",
+		showcase: "Projects",
+		showcaseDescription: "Source code and notes from projects. Start with the notebook itself.",
+		tags: "Tags",
+		updated: "Updated",
+		viewAllPosts: (count: number) => `View all ${count} posts →`,
+		viewAllProjects: (count: number) => `View all ${count} ${count === 1 ? "project" : "projects"} →`,
+		webmentions: "Webmentions for this post",
+		webmentionsCredit: "Responses powered by",
+		writing: "Writing",
+		nav: {
+			"/": "Home",
+			"/about/": "About",
+			"/posts/": "Blog",
+			"/projects/": "Projects",
+			"/search/": "Search",
+		} as Record<string, string>,
+		theme: { dark: "Dark", light: "Light", toggle: "Toggle theme" },
+	},
+	zh: {
+		backToTop: "回到顶部",
+		by: "作者",
+		copied: "已复制",
+		copyLink: "复制链接",
+		draft: "草稿",
+		categories: "分类",
+		search: "搜索",
+		homeDescription:
+			"一本关于计算机科学的技术笔记，记录动手学习的过程与可复现的小实验。以中文和英文写作。",
+		latest: "最新",
+		link: "链接",
+		morePosts: "更多文章",
+		newer: "较新文章",
+		older: "较早文章",
+		posts: "博客",
+		postsDescription: "技术笔记、学习记录与小实验。",
+		poweredBy: "基于",
+		share: "分享",
+		showcase: "项目",
+		showcaseDescription: "项目源码与记录，从这本技术笔记本身开始。",
+		tags: "标签",
+		updated: "更新于",
+		viewAllPosts: (count: number) => `查看全部 ${count} 篇文章 →`,
+		viewAllProjects: (count: number) => `查看全部 ${count} 个项目 →`,
+		webmentions: "这篇文章的站外回应",
+		webmentionsCredit: "回应数据由以下服务提供：",
+		writing: "文章",
+		nav: {
+			"/": "首页",
+			"/about/": "关于",
+			"/posts/": "博客",
+			"/projects/": "项目",
+			"/search/": "搜索",
+		} as Record<string, string>,
+		theme: { dark: "深色", light: "浅色", toggle: "切换主题" },
+	},
 } as const;
 
 export function normalizeLocale(value?: string): Locale {
-  return value?.toLowerCase() === "zh" ? "zh" : defaultLocale;
+	return value?.toLowerCase() === "zh" ? "zh" : defaultLocale;
 }
 
 /** Adds the locale URL prefix. The default locale deliberately remains unprefixed. */
 export function localizedPath(locale: Locale, path = "/"): string {
-  const absolutePath = path.startsWith("/") ? path : `/${path}`;
-  if (locale === defaultLocale) return absolutePath;
-  return absolutePath === "/" ? `/${locale}/` : `/${locale}${absolutePath}`;
+	const absolutePath = path.startsWith("/") ? path : `/${path}`;
+	if (locale === defaultLocale) return absolutePath;
+	return absolutePath === "/" ? `/${locale}/` : `/${locale}${absolutePath}`;
 }
 
 export function postLocaleFromId(id: string): Locale {
-  const prefix = id.split("/", 1)[0];
-  return locales.includes(prefix as Locale) && prefix !== defaultLocale
-    ? (prefix as Locale)
-    : defaultLocale;
+	const prefix = id.split("/", 1)[0];
+	return locales.includes(prefix as Locale) && prefix !== defaultLocale
+		? (prefix as Locale)
+		: defaultLocale;
 }
 
 export function postSlugFromId(id: string): string {
-  const prefix = id.split("/", 1)[0];
-  return locales.includes(prefix as Locale) ? id.slice(prefix.length + 1) : id;
+	const prefix = id.split("/", 1)[0];
+	return locales.includes(prefix as Locale) ? id.slice(prefix.length + 1) : id;
 }

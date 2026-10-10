@@ -1,0 +1,46 @@
+---
+import type { CollectionEntry } from "astro:content";
+import PostList from "@/components/blog/PostList.astro";
+import { getCategoriesWithCount, getPostsForLocale, sortMDByDate } from "@/data/post";
+import { localizedPath, messages, type Locale } from "@/i18n/config";
+import PageLayout from "@/layouts/Base.astro";
+import { withBase } from "@/utils/path";
+
+interface Props {
+	locale: Locale;
+	category?: string;
+	posts?: CollectionEntry<"post">[];
+}
+const { locale, category, posts: supplied } = Astro.props;
+const t = messages[locale];
+const posts = supplied ?? sortMDByDate(await getPostsForLocale(locale));
+const categories = getCategoriesWithCount(posts);
+---
+<PageLayout locale={locale} meta={{
+	title: category ? `${t.categories}: ${category}` : t.categories,
+	description: locale === "zh" ? "按分类浏览技术笔记。" : "Browse technical notes by category.",
+	...(!category && { alternatePath: "/categories/" }),
+}}>
+	<nav class="browse-links" aria-label={locale === "zh" ? "浏览文章" : "Browse posts"}>
+		<a href={withBase(localizedPath(locale, "/posts/"))}>{t.posts}</a>
+		<a href={withBase(localizedPath(locale, "/categories/"))}>{t.categories}</a>
+		<a href={withBase(localizedPath(locale, "/tags/"))}>{t.tags}</a>
+	</nav>
+	<h1 class="section-label">{category ?? t.categories} · {category ? posts.length : categories.length}</h1>
+	{category ? (
+		<div class="timeline"><PostList posts={posts} locale={locale} /></div>
+	) : (
+		<ul class="category-list">
+			{categories.map(([name, count]) => <li>
+				<a href={withBase(localizedPath(locale, `/categories/${encodeURIComponent(name)}/`))}>
+					<span>{name}</span><span>{count}</span>
+				</a>
+			</li>)}
+		</ul>
+	)}
+</PageLayout>
+<style>
+	.category-list { list-style: none; padding: 0; margin: 0 0 80px; }
+	.category-list a { display: flex; justify-content: space-between; padding: 20px 0; border-bottom: 1px solid var(--hairline); }
+	.category-list a:hover { color: hsl(var(--theme-accent)); }
+</style>

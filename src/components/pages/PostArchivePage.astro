@@ -1,7 +1,8 @@
 ---
 import type { CollectionEntry } from "astro:content";
 import PostList from "@/components/blog/PostList.astro";
-import { messages, type Locale } from "@/i18n/config";
+import { localizedPath, messages, type Locale } from "@/i18n/config";
+import { withBase } from "@/utils/path";
 import PageLayout from "@/layouts/Base.astro";
 import type { Page } from "astro";
 
@@ -38,6 +39,11 @@ const totalCount = page.total;
 ---
 
 <PageLayout locale={locale} meta={meta}>
+	<nav class="browse-links" aria-label={locale === "zh" ? "浏览文章" : "Browse posts"}>
+		<a href={withBase(localizedPath(locale, "/categories/"))}>{t.categories}</a>
+		<a href={withBase(localizedPath(locale, "/tags/"))}>{t.tags}</a>
+		<a href={withBase(localizedPath(locale, "/search/"))}>{t.search}</a>
+	</nav>
 	<section class="writing" aria-labelledby="writing-label">
 		<div class="section-label" id="writing-label">
 			{t.writing} · {totalCount} {locale === "zh" ? "篇文章" : "posts"}

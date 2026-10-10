@@ -1,0 +1,32 @@
+---
+title: "Writing a bilingual technical note"
+publishDate: 2026-10-09
+description: "Sample guide: categories, tags, translation pairs, code blocks, and Markdown or MDX in akn20."
+category: Guides
+tags: [writing, sample]
+translationKey: writing-guide
+---
+
+> Sample guide for the blog template. Replace it with your own writing when ready.
+
+## Keep the metadata simple
+
+Each article has a title, date, description, one category, and any number of tags. A category groups the broad kind of writing; tags identify specific topics.
+
+```yaml
+category: Notes
+tags: [algorithms, python]
+translationKey: my-experiment
+```
+
+## Pair translations
+
+English and Chinese files share a `translationKey`. Their filenames can differ. Once both are published, the language control opens the matching translation. If only one exists, it opens the other language's Blog instead.
+
+## Use the format that fits
+
+Markdown handles ordinary text, code and math. MDX also supports small embedded components:
+
+<aside aria-label="Sample note" style={{ borderLeft: "2px solid currentColor", paddingLeft: "1rem" }}>
+  Keep the result small enough to reproduce.
+</aside>

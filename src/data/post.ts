@@ -4,9 +4,41 @@ import { siteConfig } from "@/site-config";
 
 /** Fetch all posts. Drafts are excluded in production builds. */
 export async function getAllPosts(): Promise<CollectionEntry<"post">[]> {
-	return await getCollection("post", ({ data }) => {
+	const posts = await getCollection("post", ({ data }) => {
 		return import.meta.env.PROD ? !data.draft : true;
 	});
+	const keys = new Set<string>();
+	for (const post of posts) {
+		if (!post.data.translationKey) continue;
+		const key = `${postLocaleFromId(post.id)}:${post.data.translationKey}`;
+		if (keys.has(key)) throw new Error(`Duplicate translationKey in one locale: ${key}`);
+		keys.add(key);
+	}
+	return posts;
+}
+
+export function getCategoriesWithCount(posts: CollectionEntry<"post">[]): [string, number][] {
+	const counts = new Map<string, number>();
+	for (const post of posts)
+		counts.set(post.data.category, (counts.get(post.data.category) ?? 0) + 1);
+	return [...counts].sort(([a], [b]) => a.localeCompare(b));
+}
+
+/** Only advertise published translation pairs. Slugs may differ. */
+export async function getPostAlternates(
+	post: CollectionEntry<"post">,
+): Promise<Partial<Record<Locale, string>>> {
+	if (!post.data.translationKey) return {};
+	const pair = (await getAllPosts()).filter(
+		(entry) => entry.data.translationKey === post.data.translationKey,
+	);
+	if (pair.length !== 2) return {};
+	return Object.fromEntries(
+		pair.map((entry) => [
+			postLocaleFromId(entry.id),
+			`${postLocaleFromId(entry.id) === "zh" ? "/zh" : ""}/posts/${getPostSlug(entry)}/`,
+		]),
+	);
 }
 
 /** Fetch posts belonging to one URL locale. Locale comes from the content directory. */
