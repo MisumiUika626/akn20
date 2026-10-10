@@ -200,6 +200,8 @@ const languageIcon =
 	.nav {
 		display: flex;
 		align-items: baseline;
+		flex-wrap: wrap;
+		justify-content: flex-end;
 		gap: 22px;
 		font-family: var(--type-header-nav-family);
 		font-size: var(--type-header-nav-size);
@@ -210,6 +212,8 @@ const languageIcon =
 	}
 	.nav a {
 		display: inline-block;
+		flex: 0 0 auto;
+		white-space: nowrap;
 		position: relative;
 		padding-bottom: 3px;
 		transition: color 0.2s ease;
@@ -261,7 +265,6 @@ const languageIcon =
 			grid-area: nav;
 			gap: 22px;
 			font-size: var(--type-header-nav-size);
-			flex-wrap: wrap;
 			justify-content: flex-start;
 		}
 		.nav a {
