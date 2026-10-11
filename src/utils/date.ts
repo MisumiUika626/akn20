@@ -5,6 +5,7 @@ import { siteConfig } from "@/site-config";
 const numericDateFormat = new Intl.DateTimeFormat("en-US", {
 	day: "numeric",
 	month: "numeric",
+	timeZone: "Asia/Shanghai",
 	year: "numeric",
 });
 

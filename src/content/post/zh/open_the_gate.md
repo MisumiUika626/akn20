@@ -1,6 +1,6 @@
 ---
 title: "OPEN THE G☆TE!!!"
-publishDate: "2026-10-11"
+publishDate: "2026-10-10T20:11:15.000Z"
 description: "hello,world!"
 category: "杂记"
 tags: ["杂记","lovelive"]

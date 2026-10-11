@@ -1,6 +1,6 @@
 ---
 title: "拓扑排序的自动微分"
-publishDate: "2026-10-11"
+publishDate: "2026-10-11T09:18:05.000Z"
 description: "在把暑假写的东西搬运过来"
 category: "笔记"
 tags: ["python","DL","topological sort","autograd"]

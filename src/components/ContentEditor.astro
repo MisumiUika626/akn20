@@ -20,7 +20,7 @@ const { locale } = Astro.props;
 			<div class="editor-row"><label>语言 <select name="locale"><option value="zh">中文</option><option value="en">English</option></select></label><label>文件名 <input name="slug" required pattern="[a-z0-9][a-z0-9_-]{0,79}" placeholder="my-first-post" /></label></div>
 			<label>标题 <input name="title" required maxlength="120" /></label>
 			<label>摘要（10–160 字） <textarea name="description" required minlength="10" maxlength="160" rows="2"></textarea></label>
-			<div class="editor-row"><label>发布日期 <input name="publishDate" type="date" required /></label><label>分类 <input name="category" required maxlength="50" value="笔记" /></label></div>
+			<div class="editor-row"><label>发布时间 <input name="publishDate" type="datetime-local" step="60" required /></label><label>分类 <input name="category" required maxlength="50" value="笔记" /></label></div>
 			<label>标签（用逗号分隔） <input name="tags" placeholder="算法, python" /></label>
 			<label>中英文关联键（可选） <input name="translationKey" maxlength="100" /></label>
 			<label class="editor-check"><input name="draft" type="checkbox" /> 保存为草稿 / Draft</label>

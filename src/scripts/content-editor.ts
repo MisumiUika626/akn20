@@ -16,6 +16,12 @@ export function initContentEditor() {
 	let initialized = false;
 	let busy = false;
 	const buttonDelete = document.getElementById("delete-article") as HTMLButtonElement;
+	function toDateTimeInput(value: string | Date = new Date()) {
+		const date = value instanceof Date ? value : new Date(value);
+		if (Number.isNaN(date.valueOf())) return "";
+		const localDate = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+		return localDate.toISOString().slice(0, 16);
+	}
 	function split(content: string) {
 		const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---(?:\r?\n|$)/);
 		return { data: match ? parse(match[1]) : {}, body: match ? content.slice(match[0].length).replace(/^\s*\n/, "") : content };
@@ -41,7 +47,7 @@ export function initContentEditor() {
 		form.reset(); articlePath = ""; articleSha = null; list.value = "";
 		input("slug").disabled = false; input("locale").disabled = false;
 		input("locale").value = root?.dataset.locale ?? "zh";
-		input("publishDate").value = new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0,10);
+		input("publishDate").value = toDateTimeInput();
 		input("category").value = input("locale").value === "zh" ? "笔记" : "Notes";
 		buttonDelete.disabled = true;
 	}
@@ -57,7 +63,7 @@ export function initContentEditor() {
 		const { data, body } = split(file.content);
 		articlePath = list.value; articleSha = file.sha;
 		for (const name of ["title","description","category","translationKey"]) input(name).value = data[name] ?? "";
-		input("publishDate").value = String(data.publishDate ?? "").slice(0,10);
+		input("publishDate").value = toDateTimeInput(String(data.publishDate ?? ""));
 		input("tags").value = (data.tags ?? []).join(", "); input("draft").checked = data.draft === true;
 		input("body").value = body; input("slug").value = articlePath.split("/").at(-1)?.replace(/\.md$/, "") ?? "";
 		input("locale").value = articlePath.includes("/zh/") ? "zh" : "en";
@@ -65,7 +71,7 @@ export function initContentEditor() {
 	}); });
 	form.addEventListener("submit", (event) => { event.preventDefault(); void run(async () => {
 		const path = articlePath || `src/content/post/${input("locale").value === "zh" ? "zh/" : ""}${input("slug").value}.md`;
-		const article = { title: input("title").value, description: input("description").value, publishDate: input("publishDate").value, category: input("category").value, tags: input("tags").value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean), translationKey: input("translationKey").value, draft: input("draft").checked, body: input("body").value };
+		const article = { title: input("title").value, description: input("description").value, publishDate: new Date(input("publishDate").value).toISOString(), category: input("category").value, tags: input("tags").value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean), translationKey: input("translationKey").value, draft: input("draft").checked, body: input("body").value };
 		const saved = await api("post", "PUT", { path, sha: articleSha, article });
 		articlePath = path; articleSha = saved.sha;
 		input("slug").disabled = true; input("locale").disabled = true;
@@ -82,11 +88,12 @@ export function initContentEditor() {
 			if (!/\.md$/i.test(file.name)) throw Error("请选择 .md 文件。");
 			if (file.size > 400000) throw Error("文件过大，最多支持 400 KB。");
 			const token = sessionStorage.getItem("akn20-owner-session");
-			const imported = importMarkdown(await file.text(), file.name, input("locale").value, new Date(Date.now() - new Date().getTimezoneOffset() * 60_000).toISOString().slice(0,10));
+			const imported = importMarkdown(await file.text(), file.name, input("locale").value, new Date().toISOString());
 			if (busy || !token || sessionStorage.getItem("akn20-owner-session") !== token) return;
 			if (formDirty() && !confirm("导入为新文章会替换当前编辑表单，未保存的修改会丢失。继续？")) return;
 			newArticle();
-			for (const name of ["title","slug","locale","description","publishDate","category","tags","translationKey","body"] as const) input(name).value = imported[name];
+			for (const name of ["title","slug","locale","description","category","tags","translationKey","body"] as const) input(name).value = imported[name];
+			input("publishDate").value = toDateTimeInput(imported.publishDate);
 			input("draft").checked = imported.draft;
 			say(["已导入为新文章，尚未保存。请检查摘要、文件名等必填项后点击保存。", ...imported.warnings].join(" "));
 		} catch (error) { say(error instanceof Error ? error.message : "导入失败，当前内容未修改。"); }
