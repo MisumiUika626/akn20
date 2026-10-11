@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "blooming-tensor",
+    "name": "BloomingTensor",
+    "href": "https://github.com/MisumiUika626/BloomingTensor",
+    "stack": "Python,Numpy",
+    "desc": {
+      "en": "A growing from-scratch neural network framework for exploring tensors, automatic differentiation, neural network architectures, and the mathematics behind deep learning.",
+      "zh": "一个从零构建并持续完善的神经网络框架，用于探索张量、自动微分、神经网络架构及其背后的深度学习数学原理。"
+    },
+    "priority": 1
+  }
+]
