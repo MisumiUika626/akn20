@@ -172,6 +172,15 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	.hero-profile.has-avatar { grid-template-columns: 104px minmax(0, 1fr); gap: 28px; }
 	.home-avatar { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; border: 1px solid #d8d5ce; }
 	.about-copy { font-family: var(--type-body-family); font-size: var(--type-body-size); line-height: 1.7; color: hsl(var(--theme-text-muted)); }
+	.about-copy :global(h2) {
+		margin: 0 0 10px;
+		font-family: var(--type-heading-2-family);
+		font-size: var(--type-heading-2-size);
+		font-weight: var(--type-heading-2-weight);
+		line-height: var(--type-heading-2-line-height);
+		letter-spacing: var(--type-heading-2-tracking);
+		color: hsl(var(--theme-text));
+	}
 	.about-copy :global(p) { margin: 0 0 10px; }
 	.about-copy :global(p:last-child), .about-copy :global(ul:last-child) { margin-bottom: 0; }
 	.about-copy :global(ul) { margin: 0 0 10px; padding-left: 1.2em; }
