@@ -1,7 +1,7 @@
 ---
 title: "拓扑排序的自动微分"
 publishDate: "2026-10-11"
-description: "把暑假obsidian里的东西搬运过来"
+description: "在把暑假写的东西搬运过来"
 category: "笔记"
 tags: ["python","DL","topological sort","autograd"]
 draft: false
@@ -50,6 +50,7 @@ TOPOLOGICAL-SORT(G)
 2. When a vertex finishes, insert it to the front of a list
 3. Return the list
 ```
+
 
 
 
