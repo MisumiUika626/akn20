@@ -48,9 +48,11 @@ test("Shared typography self-hosts the modern sans font stack", async () => {
 
 	assert.doesNotMatch(globalStyles, /@fontsource-variable\/noto-sans-sc/);
 	assert.doesNotMatch(globalStyles, /newsreader/);
-	assert.match(english, /--type-header-wordmark-size:\s*26px/);
+	assert.match(english, /--type-header-wordmark-size:\s*32px/);
+	assert.match(english, /--type-header-wordmark-weight:\s*700/);
 	assert.match(chinese, /Noto Sans SC Variable/);
-	assert.match(chinese, /--type-header-wordmark-size:\s*26px/);
+	assert.match(chinese, /--type-header-wordmark-size:\s*32px/);
+	assert.match(chinese, /--type-header-wordmark-weight:\s*700/);
 });
 
 test("Article-only KaTeX styles stay out of the shared stylesheet", async () => {

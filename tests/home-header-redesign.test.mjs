@@ -38,3 +38,11 @@ test("the public header is Chinese-only until translation support is added", asy
 	assert.doesNotMatch(header, /Switch to English/);
 	assert.match(rootPage, /<HomePage locale="zh" \/>/);
 });
+
+test("desktop navigation stays beside the wordmark while the theme control stays right", async () => {
+	const header = await readSource("src/components/layout/Header.astro");
+
+	assert.match(header, /\.site-header\s*\{[^}]*justify-content:\s*flex-start;/s);
+	assert.match(header, /\.header-right\s*\{[^}]*flex:\s*1;/s);
+	assert.match(header, /\.header-right\s+:global\(\.theme-toggle\)\s*\{[^}]*margin-left:\s*auto;/s);
+});

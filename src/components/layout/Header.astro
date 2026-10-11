@@ -153,7 +153,7 @@ const navIcons: Record<string, string> = {
 	.site-header {
 		display: flex;
 		align-items: baseline;
-		justify-content: space-between;
+		justify-content: flex-start;
 		gap: 24px;
 		margin-bottom: 72px;
 	}
@@ -186,7 +186,9 @@ const navIcons: Record<string, string> = {
 		display: flex;
 		align-items: center;
 		gap: 16px;
+		flex: 1;
 	}
+	.header-right :global(.theme-toggle) { margin-left: auto; }
 	.header-search { display: flex; align-items: stretch; width: 174px; height: 32px; }
 	.header-search input { min-width: 0; width: 100%; border: 1px solid var(--hairline); border-right: 0; border-radius: 4px 0 0 4px; padding: 6px 9px; background: hsl(var(--theme-bg)); color: hsl(var(--theme-text)); font: 12px var(--font-sans); }
 	.header-search button { flex: 0 0 32px; border: 1px solid var(--hairline); border-radius: 0 4px 4px 0; background: var(--accent-soft); color: hsl(var(--theme-text-muted)); cursor: pointer; }
@@ -255,7 +257,7 @@ const navIcons: Record<string, string> = {
 		}
 		.wordmark { grid-area: wordmark; }
 		.header-right { display: contents; }
-		.theme-toggle { grid-area: theme; justify-self: end; }
+		.header-right :global(.theme-toggle) { grid-area: theme; justify-self: end; margin-left: 0; }
 		.header-search { grid-area: search; width: 100%; }
 		.nav {
 			grid-area: nav;
