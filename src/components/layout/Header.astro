@@ -10,7 +10,7 @@ interface Props {
 	switchPath?: string;
 }
 
-const { locale, switchPath } = Astro.props;
+const { locale } = Astro.props;
 const t = messages[locale];
 const url = new URL(Astro.request.url);
 const wordmark = siteConfig.title;
@@ -38,8 +38,6 @@ const navIcons: Record<string, string> = {
 	"/admin/": '<path d="m10 2 4 4-8 8H2v-4zM8 4l4 4"/>',
 };
 
-const languageIcon =
-	'<circle cx="8" cy="8" r="5.75"/><path d="M2.5 8h11M8 2.25c1.65 1.55 2.5 3.45 2.5 5.75S9.65 12.2 8 13.75M8 2.25C6.35 3.8 5.5 5.7 5.5 8s.85 4.2 2.5 5.75"/>';
 ---
 
 <header class="site-header" id="main-header">
@@ -68,19 +66,6 @@ const languageIcon =
 					</a>
 				))
 				}
-				<a aria-label={locale === "en" ? "切换到简体中文" : "Switch to English"} class="language-link" href={withBase(switchPath ?? localizedPath(locale === "en" ? "zh" : "en", "/posts/"))} hreflang={locale === "en" ? "zh-CN" : "en"}>
-					<svg
-						aria-hidden="true"
-						viewBox="0 0 16 16"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1.5"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						set:html={languageIcon}
-					/>
-					{locale === "en" ? "ZH" : "EN"}
-				</a>
 			</nav>
 			<form class="header-search" action={withBase(localizedPath(locale, "/search/"))} role="search">
 				<label class="sr-only" for="header-search-input">{locale === "zh" ? "搜索文章" : "Search posts"}</label>
@@ -111,7 +96,7 @@ const languageIcon =
 				link.className = "owner-edit-link";
 				link.href = nav.dataset.editPath ?? "";
 				link.textContent = nav.dataset.editLabel ?? "Edit";
-				nav.insertBefore(link, nav.querySelector(".language-link"));
+				nav.append(link);
 			}
 		} catch { nav.querySelector(".owner-edit-link")?.remove(); }
 	}

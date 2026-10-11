@@ -34,7 +34,7 @@
 	--type-heading-3-space-after: 14px;
 
 	--type-header-wordmark-family: var(--font-serif);
-	--type-header-wordmark-size: 20px;
+	--type-header-wordmark-size: 26px;
 	--type-header-wordmark-weight: 600;
 	--type-header-wordmark-line-height: 1.62;
 	--type-header-wordmark-tracking: -0.01em;
@@ -142,7 +142,7 @@
 		--type-heading-3-size: 17px;
 		--type-heading-3-space-before: 26px;
 		--type-heading-3-space-after: 10px;
-		--type-header-wordmark-size: 18px;
+		--type-header-wordmark-size: 22px;
 		--type-header-nav-size: 12.5px;
 		--type-intro-size: 17px;
 		--type-body-lead-size: 14px;

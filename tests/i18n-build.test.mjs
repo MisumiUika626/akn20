@@ -125,21 +125,21 @@ test("Home pages report the total number of Showcase projects", async () => {
 	assert.doesNotMatch(chineseHome, /查看全部 \d+ 个项目 →/);
 });
 
-test("Home pages load only their locale-specific Maple stylesheet", async () => {
-	const englishHome = await readPage("/");
+test("Public home routes load the Chinese typography stylesheet", async () => {
+	const rootHome = await readPage("/");
 	const chineseHome = await readPage("/zh/");
-	const englishFonts = linkAttributes(englishHome).filter(
+	const rootFonts = linkAttributes(rootHome).filter(
 		(attributes) => attributes["data-font-locale"],
 	);
 	const chineseFonts = linkAttributes(chineseHome).filter(
 		(attributes) => attributes["data-font-locale"],
 	);
 
-	assert.equal(englishFonts.length, 1);
+	assert.equal(rootFonts.length, 1);
 	assert.equal(chineseFonts.length, 1);
-	assert.equal(englishFonts[0]["data-font-locale"], "en");
+	assert.equal(rootFonts[0]["data-font-locale"], "zh");
 	assert.equal(chineseFonts[0]["data-font-locale"], "zh");
-	assert.notEqual(englishFonts[0].href, chineseFonts[0].href);
+	assert.equal(rootFonts[0].href, chineseFonts[0].href);
 });
 
 test("All pages preload the shared Inter LCP font", async () => {
@@ -155,33 +155,28 @@ test("All pages preload the shared Inter LCP font", async () => {
 	assert.equal(interPreloads(chineseHome).length, 1);
 });
 
-test("The shared and English font stylesheets stay within their performance budgets", async () => {
-	const englishLinks = linkAttributes(await readPage("/")).filter(
+test("The shared and Chinese font stylesheets stay within their performance budgets", async () => {
+	const rootLinks = linkAttributes(await readPage("/")).filter(
 		({ rel }) => rel === "stylesheet",
 	);
 	const chineseLinks = linkAttributes(await readPage("/zh/")).filter(
 		({ rel }) => rel === "stylesheet",
 	);
 	const sharedStyles = await readSharedStyles(await readPage("/"));
-	const englishFonts = englishLinks.find(({ "data-font-locale": locale }) => locale === "en");
+	const rootFonts = rootLinks.find(({ "data-font-locale": locale }) => locale === "zh");
 	const chineseFonts = chineseLinks.find(({ "data-font-locale": locale }) => locale === "zh");
 
 	assert.ok(sharedStyles.includes("--theme-bg:"), "missing shared theme styles");
-	assert.ok(englishFonts, "missing English font stylesheet");
+	assert.ok(rootFonts, "missing Chinese font stylesheet on the root page");
 	assert.ok(chineseFonts, "missing Chinese font stylesheet");
-	const englishFontCss = (await readBuiltAsset(englishFonts.href)).toString();
 	const chineseFontCss = (await readBuiltAsset(chineseFonts.href)).toString();
 	const weights = (css) => [...new Set(css.match(/font-weight:\d+/gu) ?? [])].sort();
 
 	assert.ok(Buffer.byteLength(sharedStyles) < 100 * 1024);
-	assert.ok(Buffer.byteLength(englishFontCss) < 8 * 1024);
 	// CJK font CSS contains many repetitive unicode-range declarations. Keep a
 	// generous raw-size guard, but budget the gzip transfer size users receive.
 	assert.ok(Buffer.byteLength(chineseFontCss) < 800 * 1024);
 	assert.ok(gzipSync(chineseFontCss).byteLength < 400 * 1024);
-	assert.match(englishFontCss, /font-family:Maple Mono[;}]/u);
-	assert.doesNotMatch(englishFontCss, /Maple Mono CN/u);
-	assert.deepEqual(weights(englishFontCss), ["font-weight:400", "font-weight:500"]);
 	assert.match(chineseFontCss, /font-family:Maple Mono CN[;}]/u);
 	assert.match(chineseFontCss, /font-family:["']?Noto Sans SC Variable/u);
 	assert.deepEqual(weights(chineseFontCss), [
@@ -190,7 +185,7 @@ test("The shared and English font stylesheets stay within their performance budg
 		"font-weight:400",
 		"font-weight:500",
 	]);
-	assert.ok(englishLinks.every(({ href }) => !/BlogPost|\/ec\./u.test(href)));
+	assert.ok(rootLinks.every(({ href }) => !/BlogPost|\/ec\./u.test(href)));
 });
 
 test("Production CSS preserves responsive layout breakpoints", async () => {

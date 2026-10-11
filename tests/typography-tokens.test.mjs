@@ -22,13 +22,13 @@ test("English and Chinese typography adapters implement the same token interface
 	assert.ok(tokenNames(english).length > 0);
 });
 
-test("Built pages expose the language selectors used by the typography adapters", async () => {
-	const [english, chinese] = await Promise.all([
+test("Public home routes use the Chinese typography adapter", async () => {
+	const [root, chinese] = await Promise.all([
 		readProjectFile("dist/index.html"),
 		readProjectFile("dist/zh/index.html"),
 	]);
 
-	assert.match(english, /<html\b[^>]*\blang=(?:"en"|en)(?:\s|>)/);
+	assert.match(root, /<html\b[^>]*\blang=(?:"zh-CN"|zh-CN)(?:\s|>)/);
 	assert.match(chinese, /<html\b[^>]*\blang=(?:"zh-CN"|zh-CN)(?:\s|>)/);
 });
 
@@ -48,9 +48,9 @@ test("Shared typography self-hosts the modern sans font stack", async () => {
 
 	assert.doesNotMatch(globalStyles, /@fontsource-variable\/noto-sans-sc/);
 	assert.doesNotMatch(globalStyles, /newsreader/);
-	assert.match(english, /--type-header-wordmark-size:\s*20px/);
+	assert.match(english, /--type-header-wordmark-size:\s*26px/);
 	assert.match(chinese, /Noto Sans SC Variable/);
-	assert.match(chinese, /--type-header-wordmark-size:\s*20px/);
+	assert.match(chinese, /--type-header-wordmark-size:\s*26px/);
 });
 
 test("Article-only KaTeX styles stay out of the shared stylesheet", async () => {

@@ -29,8 +29,11 @@ const rest = timelinePosts.slice(1);
 const archiveCount = allPosts.length;
 const featuredShowcase = getFeaturedShowcase();
 const aboutEntryId = locale === "zh" ? "zh/about" : "about";
-const aboutEntry = await getEntry("page", aboutEntryId);
-if (!aboutEntry) throw new Error(`Missing src/content/page/${aboutEntryId}.md`);
+const fallbackAboutEntryId = locale === "zh" ? "about" : "zh/about";
+const localizedAboutEntry = await getEntry("page", aboutEntryId);
+const fallbackAboutEntry = await getEntry("page", fallbackAboutEntryId);
+const aboutEntry = localizedAboutEntry?.body?.trim() ? localizedAboutEntry : fallbackAboutEntry;
+if (!aboutEntry) throw new Error(`Missing About content for ${locale}`);
 const { Content: AboutContent } = await render(aboutEntry);
 
 const profile = siteConfig.profile;
@@ -63,7 +66,6 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 		<div class:list={["hero-profile", { "has-avatar": settings.avatar }]}>
 			{settings.avatar && <img class="home-avatar" src={settings.avatar.startsWith("data:") ? settings.avatar : withBase(settings.avatar)} alt={locale === "zh" ? "博主头像" : "Author avatar"} width="104" height="104" />}
 			<div class="hero-about">
-				<h1>{siteConfig.title}</h1>
 				<div class="about-copy"><AboutContent /></div>
 			</div>
 		</div>
@@ -169,16 +171,6 @@ const siteUrl = (path: string) => absoluteUrl(path, Astro.site);
 	.hero-profile { display: grid; grid-template-columns: 1fr; gap: 18px; align-items: start; }
 	.hero-profile.has-avatar { grid-template-columns: 104px minmax(0, 1fr); gap: 28px; }
 	.home-avatar { width: 104px; height: 104px; object-fit: cover; border-radius: 50%; border: 1px solid #d8d5ce; }
-	.hero h1 {
-		font-family: var(--type-heading-1-family);
-		font-size: clamp(28px, 5vw, 42px);
-		font-weight: 500;
-		line-height: 1.25;
-		letter-spacing: -0.025em;
-		margin: 0 0 14px;
-		max-width: 22ch;
-		text-wrap: balance;
-	}
 	.about-copy { font-family: var(--type-body-family); font-size: var(--type-body-size); line-height: 1.7; color: hsl(var(--theme-text-muted)); }
 	.about-copy :global(p) { margin: 0 0 10px; }
 	.about-copy :global(p:last-child), .about-copy :global(ul:last-child) { margin-bottom: 0; }
