@@ -29,6 +29,7 @@ const post = defineCollection({
 			description: z.string().min(10).max(160),
 			draft: z.boolean().default(false),
 			category: z.string().trim().min(1).max(50).default("Notes"),
+			projects: z.array(z.string().trim().regex(/^[a-z0-9][a-z0-9_-]{0,79}$/)).default([]),
 			translationKey: z.string().trim().min(1).optional(),
 			ogImage: z.string().optional(),
 			publishDate: z

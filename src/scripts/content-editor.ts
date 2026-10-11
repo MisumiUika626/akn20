@@ -11,8 +11,10 @@ export function initContentEditor() {
 	const form = document.getElementById("article-form") as HTMLFormElement;
 	const list = document.getElementById("article-list") as HTMLSelectElement;
 	const input = (name: string) => form.elements.namedItem(name) as HTMLInputElement;
+	const projectSelect = form.elements.namedItem("projects") as HTMLSelectElement;
 	let articlePath = "", articleSha: string | null = null;
 	let projectsSha: string | null = null, aboutSha: string | null = null, titleSha: string | null = null;
+	let projectValues: Array<Record<string, unknown>> = [];
 	let initialized = false;
 	let busy = false;
 	const buttonDelete = document.getElementById("delete-article") as HTMLButtonElement;
@@ -51,6 +53,14 @@ export function initContentEditor() {
 		input("category").value = input("locale").value === "zh" ? "笔记" : "Notes";
 		buttonDelete.disabled = true;
 	}
+	function refreshProjectChoices(selected: string[] = []) {
+		const wanted = new Set(selected);
+		projectSelect.replaceChildren(...projectValues.map((project) => {
+			const option = new Option(String(project.name ?? project.id), String(project.id ?? ""));
+			option.selected = wanted.has(option.value);
+			return option;
+		}));
+	}
 	async function refreshArticles() {
 		const result = await api("posts");
 		list.replaceChildren(new Option("新建文章 / New article", ""));
@@ -65,13 +75,14 @@ export function initContentEditor() {
 		for (const name of ["title","description","category","translationKey"]) input(name).value = data[name] ?? "";
 		input("publishDate").value = toDateTimeInput(String(data.publishDate ?? ""));
 		input("tags").value = (data.tags ?? []).join(", "); input("draft").checked = data.draft === true;
+		refreshProjectChoices(Array.isArray(data.projects) ? data.projects : []);
 		input("body").value = body; input("slug").value = articlePath.split("/").at(-1)?.replace(/\.md$/, "") ?? "";
 		input("locale").value = articlePath.includes("/zh/") ? "zh" : "en";
 		input("slug").disabled = true; input("locale").disabled = true;
 	}); });
 	form.addEventListener("submit", (event) => { event.preventDefault(); void run(async () => {
 		const path = articlePath || `src/content/post/${input("locale").value === "zh" ? "zh/" : ""}${input("slug").value}.md`;
-		const article = { title: input("title").value, description: input("description").value, publishDate: new Date(input("publishDate").value).toISOString(), category: input("category").value, tags: input("tags").value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean), translationKey: input("translationKey").value, draft: input("draft").checked, body: input("body").value };
+		const article = { title: input("title").value, description: input("description").value, publishDate: new Date(input("publishDate").value).toISOString(), category: input("category").value, tags: input("tags").value.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean), projects: [...projectSelect.selectedOptions].map((option) => option.value), translationKey: input("translationKey").value, draft: input("draft").checked, body: input("body").value };
 		const saved = await api("post", "PUT", { path, sha: articleSha, article });
 		articlePath = path; articleSha = saved.sha;
 		input("slug").disabled = true; input("locale").disabled = true;
@@ -94,6 +105,7 @@ export function initContentEditor() {
 			newArticle();
 			for (const name of ["title","slug","locale","description","category","tags","translationKey","body"] as const) input(name).value = imported[name];
 			input("publishDate").value = toDateTimeInput(imported.publishDate);
+			refreshProjectChoices(imported.projects);
 			input("draft").checked = imported.draft;
 			say(["已导入为新文章，尚未保存。请检查摘要、文件名等必填项后点击保存。", ...imported.warnings].join(" "));
 		} catch (error) { say(error instanceof Error ? error.message : "导入失败，当前内容未修改。"); }
@@ -104,7 +116,7 @@ export function initContentEditor() {
 	function addProject(value: Record<string, unknown> = {}) {
 		const card = document.createElement("div"); card.className = "project-card";
 		const desc = (value.desc ?? {}) as Record<string, string>;
-		const fields = [["name","项目名称",value.name],["href","项目链接（https://…）",value.href],["stack","技术栈",value.stack],["en","English description",desc.en],["zh","中文简介",desc.zh],["priority","排序优先级",value.priority ?? 0],["badge","状态（可选）",(value.badge as {label?:string})?.label]];
+		const fields = [["id","项目 ID（英文或数字，保存后不要修改）",value.id],["name","项目名称",value.name],["href","项目链接（https://…）",value.href],["stack","技术栈",value.stack],["en","English description",desc.en],["zh","中文简介",desc.zh],["priority","排序优先级",value.priority ?? 0],["badge","状态（可选）",(value.badge as {label?:string})?.label]];
 		for (const [key,label,initial] of fields) {
 			const row = document.createElement("label"); row.textContent = String(label);
 			const field = document.createElement("input"); field.dataset.field = String(key); field.value = String(initial ?? "");
@@ -119,9 +131,9 @@ export function initContentEditor() {
 	document.getElementById("save-projects")?.addEventListener("click", () => { void run(async () => {
 		const value = [...cards.children].map((card) => {
 			const get = (key: string) => (card.querySelector(`[data-field="${key}"]`) as HTMLInputElement).value;
-			return { name: get("name"), href: get("href"), stack: get("stack"), desc: { en: get("en"), zh: get("zh") }, priority: Number(get("priority")), ...(get("badge") && { badge: { label: get("badge") } }) };
+			return { id: get("id"), name: get("name"), href: get("href"), stack: get("stack"), desc: { en: get("en"), zh: get("zh") }, priority: Number(get("priority")), ...(get("badge") && { badge: { label: get("badge") } }) };
 		});
-		const saved = await api("projects", "PUT", { sha: projectsSha, value }); projectsSha = saved.sha;
+		const saved = await api("projects", "PUT", { sha: projectsSha, value }); projectsSha = saved.sha; projectValues = value; refreshProjectChoices();
 	}, true); });
 	const aboutLocale = document.getElementById("about-locale") as HTMLSelectElement;
 	const about = document.getElementById("about-body") as HTMLTextAreaElement;
@@ -153,7 +165,7 @@ export function initContentEditor() {
 			root.hidden = false;
 			if (initialized) return;
 			await refreshArticles();
-			const projects = await api("projects"); projectsSha = projects.sha; cards.replaceChildren(); projects.value.forEach(addProject);
+			const projects = await api("projects"); projectsSha = projects.sha; projectValues = projects.value; cards.replaceChildren(); projectValues.forEach(addProject); refreshProjectChoices();
 			const settings = await api("settings"); titleSha = settings.sha; title.value = settings.value.title; avatar = settings.value.avatar ?? null; showAvatar();
 			aboutLocale.value = root.dataset.locale ?? "zh"; await loadAbout(); newArticle(); initialized = true;
 		});

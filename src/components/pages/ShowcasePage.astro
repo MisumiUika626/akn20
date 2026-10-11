@@ -1,9 +1,11 @@
 ---
 import ShowcaseBadge from "@/components/showcase/ShowcaseBadge.astro";
+import { getAllPosts, getPostSlug, sortMDByDate } from "@/data/post";
 import { getShowcaseByPriority } from "@/data/showcase";
-import { localizedPath, messages, type Locale } from "@/i18n/config";
+import { localizedPath, messages, postLocaleFromId, type Locale } from "@/i18n/config";
 import PageLayout from "@/layouts/Base.astro";
-import { absoluteUrl } from "@/utils/path";
+import { formatRailDate } from "@/utils/date";
+import { absoluteUrl, withBase } from "@/utils/path";
 import { Schema } from "astro-seo-schema";
 
 interface Props {
@@ -15,6 +17,7 @@ const t = messages[locale];
 const homePath = localizedPath(locale, "/");
 const showcasePath = localizedPath(locale, "/projects/");
 const sortedShowcase = getShowcaseByPriority();
+const posts = sortMDByDate(await getAllPosts());
 ---
 
 <Schema
@@ -51,18 +54,28 @@ const sortedShowcase = getShowcaseByPriority();
 		{sortedShowcase.length > 0 && <p class="intro">{t.showcaseDescription}</p>}
 		<ul class="work-list">
 			{
-					sortedShowcase.map((item) => (
-					<li>
-						<a href={item.href} rel="noreferrer" target="_blank">
-							<div class="head">
-								<span class="name">{item.name}</span>
-								<span class="stack">{item.stack}</span>
-								{item.badge && <ShowcaseBadge badge={item.badge} />}
-							</div>
-							<p>{item.desc[locale]}</p>
-						</a>
-					</li>
-				))
+					sortedShowcase.map((item) => {
+						const relatedPosts = posts.filter((post) => post.data.projects.includes(item.id));
+						return <li id={`project-${item.id}`}>
+							<a href={item.href} rel="noreferrer" target="_blank">
+								<div class="head">
+									<span class="name">{item.name}</span>
+									<span class="stack">{item.stack}</span>
+									{item.badge && <ShowcaseBadge badge={item.badge} />}
+								</div>
+								<p>{item.desc[locale]}</p>
+							</a>
+							{relatedPosts.length > 0 && <div class="related-posts">
+								<div class="related-label">{locale === "zh" ? "相关文章" : "Related posts"}</div>
+								<ul>
+									{relatedPosts.map((post) => {
+										const postLocale = postLocaleFromId(post.id);
+										return <li><a href={withBase(localizedPath(postLocale, `/posts/${getPostSlug(post)}/`))}>{post.data.title}</a><time datetime={post.data.publishDate.toISOString()}>{formatRailDate(post.data.publishDate, postLocale)}</time></li>;
+									})}
+								</ul>
+							</div>}
+						</li>;
+					})
 			}
 		</ul>
 	</section>
@@ -81,6 +94,13 @@ const sortedShowcase = getShowcaseByPriority();
 		max-width: 60ch;
 		text-wrap: pretty;
 	}
+	.related-posts { margin-top: 16px; padding-left: 18px; border-left: 2px solid var(--hairline); }
+	.related-label { font: 12px var(--font-sans); color: hsl(var(--theme-text-muted)); margin-bottom: 8px; }
+	.related-posts ul { list-style: none; margin: 0; padding: 0; }
+	.related-posts li { display: flex; justify-content: space-between; gap: 18px; padding: 5px 0; border: 0; }
+	.related-posts li:last-child { border: 0; }
+	.related-posts a { display: inline; color: hsl(var(--theme-text)); text-decoration: underline; text-underline-offset: 3px; }
+	.related-posts time { flex: none; font: 11px var(--font-mono); color: hsl(var(--theme-text) / 0.55); }
 
 	@media (max-width: 720px) {
 		.intro {

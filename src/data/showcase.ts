@@ -2,6 +2,7 @@ import type { Locale } from "@/i18n/config";
 import projects from "./projects.json";
 
 export interface ShowcaseItem {
+	id: string;
 	name: string;
 	href: string;
 	stack: string;
@@ -24,4 +25,9 @@ export function getShowcaseByPriority(): ShowcaseItem[] {
 
 export function getFeaturedShowcase(limit = 3): ShowcaseItem[] {
 	return getShowcaseByPriority().slice(0, limit);
+}
+
+export function getProjectsByIds(ids: string[]): ShowcaseItem[] {
+	const wanted = new Set(ids);
+	return showcase.filter((project) => wanted.has(project.id));
 }

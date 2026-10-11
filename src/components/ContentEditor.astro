@@ -22,6 +22,8 @@ const { locale } = Astro.props;
 			<label>摘要（10–160 字） <textarea name="description" required minlength="10" maxlength="160" rows="2"></textarea></label>
 			<div class="editor-row"><label>发布时间 <input name="publishDate" type="datetime-local" step="60" required /></label><label>分类 <input name="category" required maxlength="50" value="笔记" /></label></div>
 			<label>标签（用逗号分隔） <input name="tags" placeholder="算法, python" /></label>
+			<label>关联项目（可多选） <select name="projects" multiple size="4"></select></label>
+			<p class="editor-note">项目需要先在“项目”页签中创建；按 Ctrl 或 Command 可选择多个项目。</p>
 			<label>中英文关联键（可选） <input name="translationKey" maxlength="100" /></label>
 			<label class="editor-check"><input name="draft" type="checkbox" /> 保存为草稿 / Draft</label>
 			<label>正文（Markdown） <textarea name="body" rows="20" class="markdown-body" maxlength="100000"></textarea></label>

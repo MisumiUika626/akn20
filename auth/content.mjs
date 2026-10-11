@@ -29,14 +29,18 @@ function postData(data) {
 	if (data.draft !== undefined && typeof data.draft !== "boolean") fail("Invalid draft flag");
 	const result = {
 		title: text(data.title, "title", 120, 1),
-		publishDate: text(data.publishDate, "date", 10, 10),
+		publishDate: text(data.publishDate, "date", 40, 10),
 		description: text(data.description, "description", 160, 10),
 		category: text(data.category, "category", 50, 1),
 		tags: data.tags,
+		projects: data.projects ?? [],
 		draft: data.draft === true,
 	};
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(result.publishDate) || Number.isNaN(Date.parse(result.publishDate)) || new Date(result.publishDate).toISOString().slice(0,10) !== result.publishDate) fail("Invalid date");
+	const published = new Date(result.publishDate);
+	if (Number.isNaN(published.valueOf())) fail("Invalid date");
+	result.publishDate = published.toISOString();
 	if (!Array.isArray(result.tags) || result.tags.length > 30 || result.tags.some((tag) => typeof tag !== "string" || !tag.trim() || tag.length > 50)) fail("Invalid tags");
+	if (!Array.isArray(result.projects) || result.projects.length > 20 || new Set(result.projects).size !== result.projects.length || result.projects.some((id) => typeof id !== "string" || !/^[a-z0-9][a-z0-9_-]{0,79}$/.test(id))) fail("Invalid projects");
 	if (data.translationKey) result.translationKey = text(data.translationKey, "translation key", 100, 1);
 	text(data.body, "body", 100_000);
 	return result;
@@ -47,11 +51,15 @@ export function articleFile(data) {
 }
 function projectsData(data) {
 	if (!Array.isArray(data) || data.length > 100) fail("Invalid projects");
+	const ids = new Set();
 	return data.map((p) => {
 		if (!p || typeof p !== "object" || Array.isArray(p)) fail("Invalid project");
+		const id = text(p.id, "project ID", 80, 1);
+		if (!/^[a-z0-9][a-z0-9_-]{0,79}$/.test(id) || ids.has(id)) fail("Invalid project ID");
+		ids.add(id);
 		const href = text(p.href, "project link", 2048, 1);
 		try { const url = new URL(href); if (!["https:","http:"].includes(url.protocol) || url.username || url.password) fail("Invalid project link"); } catch { fail("Invalid project link"); }
-		const project = { name: text(p.name, "project name", 120, 1), href, stack: text(p.stack, "stack", 200), desc: { en: text(p.desc?.en, "English project description", 1000), zh: text(p.desc?.zh, "Chinese project description", 1000) }, priority: p.priority };
+		const project = { id, name: text(p.name, "project name", 120, 1), href, stack: text(p.stack, "stack", 200), desc: { en: text(p.desc?.en, "English project description", 1000), zh: text(p.desc?.zh, "Chinese project description", 1000) }, priority: p.priority };
 		if (!Number.isFinite(p.priority) || Math.abs(p.priority) > 10000) fail("Invalid priority");
 		if (p.badge?.label) project.badge = { label: text(p.badge.label, "status", 50, 1) };
 		return project;

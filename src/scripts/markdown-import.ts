@@ -15,7 +15,7 @@ export function importMarkdown(content: string, filename: string, locale: string
  const slug = stem.toLowerCase().replace(/\s+/g, "-");
  const warnings: string[] = [];
  if (/!\[[^\]]*\]\(\s*(?!https?:|data:|\/\/|#)[^\s)]+/i.test(body) || /<img\b/i.test(body) || /!\[[^\]]*\]\[[^\]]*\]/.test(body)) warnings.push("文章包含图片；本地图片不会自动上传，请检查图片链接。");
- const supported = new Set(["title","description","publishDate","date","category","categories","tags","translationKey","draft","locale","lang","language"]);
+ const supported = new Set(["title","description","publishDate","date","category","categories","tags","projects","translationKey","draft","locale","lang","language"]);
  const extras = Object.keys(data).filter(key => !supported.has(key));
  if (extras.length) warnings.push(`未导入额外文件头字段：${extras.join("、")}。原文件不会修改。`);
  return {
@@ -23,9 +23,10 @@ export function importMarkdown(content: string, filename: string, locale: string
   slug: /^[a-z0-9][a-z0-9_-]{0,79}$/.test(slug) ? slug : "",
   locale: selectedLocale,
   description: str(data.description),
-  publishDate: str(data.publishDate ?? data.date).slice(0,10) || today,
+  publishDate: str(data.publishDate ?? data.date) || today,
   category: str(data.category) || str(Array.isArray(data.categories) ? data.categories[0] : data.categories) || (selectedLocale === "zh" ? "笔记" : "Notes"),
   tags: Array.isArray(data.tags) ? data.tags.map(str).filter(Boolean).join(", ") : str(data.tags),
+  projects: Array.isArray(data.projects) ? data.projects.map(str).filter(Boolean) : [],
   translationKey: str(data.translationKey),
   draft: typeof data.draft === "boolean" ? data.draft : true,
   body, warnings,

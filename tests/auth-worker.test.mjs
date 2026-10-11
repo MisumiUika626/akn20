@@ -138,10 +138,10 @@ test("content API rejects path traversal and workflow edits before GitHub is cal
 	}
 });
 
-test("article creation writes UTF-8 Markdown only to the fixed main-branch content path", async () => {
+test("article creation writes timestamps and project links to UTF-8 Markdown only in the fixed content path", async () => {
 	const { message } = await callback();
 	let payload;
-	const result = await handleRequest(new Request(`${origin}/content/post`, { method: "PUT", headers: { Origin: editor, Authorization: `Bearer ${message.token}` }, body: JSON.stringify({ path: "src/content/post/zh/test-note.md", sha: null, repo: "attacker/repo", article: { title: "标题", description: "这是用于验证中文文章写入的摘要。", category: "笔记", publishDate: "2026-10-10", tags: ["测试"], body: "正文内容", draft: true } }) }), env, async (url, options) => {
+	const result = await handleRequest(new Request(`${origin}/content/post`, { method: "PUT", headers: { Origin: editor, Authorization: `Bearer ${message.token}` }, body: JSON.stringify({ path: "src/content/post/zh/test-note.md", sha: null, repo: "attacker/repo", article: { title: "标题", description: "这是用于验证中文文章写入的摘要。", category: "笔记", publishDate: "2026-10-10T09:18:05.000Z", tags: ["测试"], projects: ["bloomingtensor"], body: "正文内容", draft: true } }) }), env, async (url, options) => {
 		assert.equal(url, "https://api.github.com/repos/MisumiUika626/akn20/contents/src/content/post/zh/test-note.md");
 		assert.equal(options.method, "PUT");
 		assert.equal(options.headers.Authorization, "Bearer github-token-must-never-reach-client");
@@ -153,6 +153,8 @@ test("article creation writes UTF-8 Markdown only to the fixed main-branch conte
 	const file = Buffer.from(payload.content, "base64").toString("utf8");
 	assert.match(file, /title: "标题"/);
 	assert.match(file, /draft: true/);
+	assert.match(file, /publishDate: "2026-10-10T09:18:05.000Z"/);
+	assert.match(file, /projects: \["bloomingtensor"\]/);
 	assert.match(file, /正文内容/);
 });
 
@@ -170,6 +172,15 @@ test("project links must be web URLs and deleting settings is forbidden", async 
 	const result = await handleRequest(new Request(`${origin}/content/projects`, { method: "PUT", headers, body: JSON.stringify({ sha: null, value: [{ name: "bad", href: "javascript:alert(1)", stack: "", desc: { en: "", zh: "" }, priority: 0 }] }) }), env);
 	assert.equal(result.status, 400);
 	assert.equal((await handleRequest(new Request(`${origin}/content/settings`, { method: "DELETE", headers, body: JSON.stringify({ sha: "a".repeat(40) }) }), env)).status, 403);
+});
+
+test("project IDs are stable, unique and safe for article associations", async () => {
+	const { message } = await callback();
+	const headers = { Origin: editor, Authorization: `Bearer ${message.token}` };
+	const project = { id: "bloomingtensor", name: "BloomingTensor", href: "https://github.com/example/project", stack: "Python", desc: { en: "", zh: "" }, priority: 1 };
+	const request = (value) => new Request(`${origin}/content/projects`, { method: "PUT", headers, body: JSON.stringify({ sha: null, value }) });
+	assert.equal((await handleRequest(request([{ ...project, id: "Bad ID" }]), env)).status, 400);
+	assert.equal((await handleRequest(request([project, project]), env)).status, 400);
 });
 
 test("duplicate published translation keys are rejected before committing", async () => {

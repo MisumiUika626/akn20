@@ -2,10 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 test('imports metadata and preserves Markdown body', async () => {
  const { importMarkdown } = await import('../src/scripts/markdown-import.ts');
- const result = importMarkdown('---\ntitle: 测试\ndate: 2026-10-11\ntags: [算法, Python]\nlang: en\n---\n# Body\n![image](./image.png)', 'Example.md', 'zh', '2026-10-10');
+ const result = importMarkdown('---\ntitle: 测试\ndate: 2026-10-11\ntags: [算法, Python]\nprojects: [bloomingtensor, bayesmail]\nlang: en\n---\n# Body\n![image](./image.png)', 'Example.md', 'zh', '2026-10-10');
  assert.equal(result.title, '测试'); assert.equal(result.publishDate, '2026-10-11');
  assert.equal(result.slug, 'example'); assert.equal(result.locale, 'en');
  assert.equal(result.tags, '算法, Python'); assert.match(result.body, /# Body/);
+ assert.deepEqual(result.projects, ['bloomingtensor', 'bayesmail']);
  assert.ok(result.warnings.some(value => value.includes('图片')));
 });
 test('plain Markdown derives heading and handles Chinese filenames', async () => {
