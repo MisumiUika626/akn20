@@ -4,7 +4,7 @@ publishDate: "2026-10-11"
 description: "把暑假obsidian里的东西搬运过来"
 category: "笔记"
 tags: ["python","DL","topological sort","autograd"]
-draft: true
+draft: false
 ---
 
 看了Kapathy的zeroToHero系列视频，我发现之前神经网络中的参数通常只是普通数字（weight = 0.5） 但是普通数字只保存了当前值，并不知道： 
@@ -50,5 +50,6 @@ TOPOLOGICAL-SORT(G)
 2. When a vertex finishes, insert it to the front of a list
 3. Return the list
 ```
+
 
 
