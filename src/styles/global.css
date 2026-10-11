@@ -30,7 +30,7 @@
 	:root[data-theme="light"] {
 		color-scheme: light;
 		/* hsl-channel format — see tailwind.config.ts color mapping */
-		--theme-bg: 52.5deg 28.571% 94.51%; /* #f5f4ed */
+		--theme-bg: 0deg 0% 100%; /* #ffffff */
 		--theme-text: 28deg 16% 13%; /* #25201b */
 		--theme-text-body: 28deg 16% 13%; /* #25201b */
 		--theme-text-muted: 25deg 14% 26%; /* #4a4239 */
